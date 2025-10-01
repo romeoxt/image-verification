@@ -28,16 +28,21 @@ FROM node:20-slim
 
 WORKDIR /app
 
+# Copy workspace configuration
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/package-lock.json ./package-lock.json
+
+# Copy root node_modules (workspace dependencies)
+COPY --from=builder /app/node_modules ./node_modules
+
 # Copy built artifacts
 COPY --from=builder /app/apps/api/dist ./apps/api/dist
 COPY --from=builder /app/apps/api/package.json ./apps/api/package.json
-COPY --from=builder /app/apps/api/node_modules ./apps/api/node_modules
 COPY --from=builder /app/apps/api/public ./apps/api/public
 
 # Copy c2pa package (runtime dependency)
 COPY --from=builder /app/packages/c2pa/dist ./packages/c2pa/dist
 COPY --from=builder /app/packages/c2pa/package.json ./packages/c2pa/package.json
-COPY --from=builder /app/packages/c2pa/node_modules ./packages/c2pa/node_modules
 
 # Copy database migrations (needed for runtime)
 COPY --from=builder /app/apps/api/db ./apps/api/db
