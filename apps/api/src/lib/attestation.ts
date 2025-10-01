@@ -5,8 +5,7 @@
  */
 
 import crypto from 'crypto';
-import { X509Certificate, AsnParser } from '@peculiar/x509';
-import { verifyAttestationResponse } from '@simplewebauthn/server';
+import { X509Certificate } from '@peculiar/x509';
 import * as cbor from 'cbor';
 
 export type SecurityLevel = 'software' | 'tee' | 'strongbox' | 'unknown';

@@ -9,12 +9,6 @@ import { sha256, generateVerificationId } from '../lib/crypto.js';
 import { analyzeAsset } from '../lib/heuristics.js';
 import type { VerifyRequestJson, VerifyResponse } from '../types/index.js';
 
-interface VerifyMultipartFields {
-  asset?: MultipartFile;
-  manifest?: MultipartFile;
-  policyId?: string;
-}
-
 export async function verifyRoutes(fastify: FastifyInstance) {
   /**
    * POST /v1/verify

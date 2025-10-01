@@ -109,21 +109,21 @@ async function registerRoutes() {
   await fastify.register(evidenceRoutes);
 
   // Stub routes
-  fastify.post('/v1/enroll', async (request, reply) => {
+  fastify.post('/v1/enroll', async (_request, reply) => {
     return reply.code(501).send({
       error: 'not_implemented',
       message: 'Enrollment endpoint not yet implemented',
     });
   });
 
-  fastify.post('/v1/timestamp', async (request, reply) => {
+  fastify.post('/v1/timestamp', async (_request, reply) => {
     return reply.code(501).send({
       error: 'not_implemented',
       message: 'Timestamp endpoint not yet implemented',
     });
   });
 
-  fastify.get('/v1/verify/ui', async (request, reply) => {
+  fastify.get('/v1/verify/ui', async (_request, reply) => {
     return reply.code(501).send({
       error: 'not_implemented',
       message: 'Verification UI endpoint not yet implemented',
@@ -172,7 +172,7 @@ async function shutdown(signal: string) {
     fastify.log.info('Server closed successfully');
     process.exit(0);
   } catch (error) {
-    fastify.log.error('Error during shutdown:', error);
+    fastify.log.error('Error during shutdown:', error as Error);
     process.exit(1);
   }
 }
