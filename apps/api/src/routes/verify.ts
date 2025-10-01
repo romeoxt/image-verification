@@ -2,7 +2,6 @@
  * /v1/verify endpoint - Verify media authenticity
  */
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import type { MultipartFile } from '@fastify/multipart';
 import * as c2pa from '@popc/c2pa';
 import { query, queryOne, type Policy } from '../lib/db.js';
 import { sha256, generateVerificationId } from '../lib/crypto.js';
