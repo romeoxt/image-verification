@@ -66,10 +66,10 @@ export function verifySignature(
 }
 
 /**
- * Generate verification ID
+ * Generate verification ID (UUID format)
  */
 export function generateVerificationId(): string {
-  return `ver_${crypto.randomBytes(12).toString('hex')}`;
+  return crypto.randomUUID();
 }
 
 /**
