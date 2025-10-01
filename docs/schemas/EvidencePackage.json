@@ -1,0 +1,721 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://api.popc.example.com/schemas/EvidencePackage.json",
+  "title": "EvidencePackage",
+  "description": "Complete evidence package for legal/audit purposes",
+  "type": "object",
+  "required": [
+    "packageVersion",
+    "verificationId",
+    "generatedAt",
+    "asset",
+    "manifest",
+    "verification",
+    "deviceCertChain",
+    "transparencyLog"
+  ],
+  "properties": {
+    "packageVersion": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$",
+      "description": "Evidence package format version",
+      "examples": [
+        "1.0",
+        "1.1"
+      ]
+    },
+    "verificationId": {
+      "type": "string",
+      "pattern": "^ver_[a-z0-9]+$",
+      "description": "Verification identifier",
+      "examples": [
+        "ver_1a2b3c4d5e6f"
+      ]
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when evidence package was generated (ISO 8601)",
+      "examples": [
+        "2024-01-15T10:35:22Z"
+      ]
+    },
+    "asset": {
+      "type": "object",
+      "description": "Information about the verified asset",
+      "required": [
+        "sha256",
+        "sizeBytes",
+        "mimeType"
+      ],
+      "properties": {
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "description": "SHA-256 hash of the asset",
+          "examples": [
+            "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          ]
+        },
+        "sha512": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{128}$",
+          "description": "SHA-512 hash of the asset (optional)",
+          "examples": [
+            "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e"
+          ]
+        },
+        "sizeBytes": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Size of the asset in bytes",
+          "examples": [
+            1024000,
+            5242880
+          ]
+        },
+        "mimeType": {
+          "type": "string",
+          "description": "MIME type of the asset",
+          "examples": [
+            "image/jpeg",
+            "image/png",
+            "video/mp4"
+          ]
+        },
+        "fileName": {
+          "type": "string",
+          "description": "Original filename (if available)",
+          "examples": [
+            "photo_2024-01-15.jpg",
+            "video_recording.mp4"
+          ]
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to download the original asset (time-limited signed URL)",
+          "examples": [
+            "https://cdn.popc.example.com/assets/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855?signature=..."
+          ]
+        }
+      }
+    },
+    "manifest": {
+      "type": "object",
+      "description": "C2PA manifest information",
+      "required": [
+        "format",
+        "contentBinding"
+      ],
+      "properties": {
+        "format": {
+          "type": "string",
+          "description": "Manifest format",
+          "examples": [
+            "c2pa",
+            "c2pa-1.0"
+          ]
+        },
+        "raw": {
+          "type": "string",
+          "contentEncoding": "base64",
+          "description": "Base64-encoded raw manifest bytes",
+          "examples": [
+            "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9..."
+          ]
+        },
+        "parsed": {
+          "type": "object",
+          "description": "Parsed manifest fields",
+          "additionalProperties": true
+        },
+        "contentBinding": {
+          "type": "object",
+          "description": "Content binding hash information",
+          "required": [
+            "algorithm",
+            "hash",
+            "matches"
+          ],
+          "properties": {
+            "algorithm": {
+              "type": "string",
+              "description": "Hash algorithm used",
+              "examples": [
+                "sha256",
+                "sha512"
+              ]
+            },
+            "hash": {
+              "type": "string",
+              "pattern": "^[a-f0-9]+$",
+              "description": "Hash value from manifest",
+              "examples": [
+                "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+              ]
+            },
+            "matches": {
+              "type": "boolean",
+              "description": "Whether content binding hash matches asset",
+              "examples": [
+                true,
+                false
+              ]
+            }
+          }
+        }
+      }
+    },
+    "verification": {
+      "type": "object",
+      "description": "Verification result details",
+      "required": [
+        "verdict",
+        "verifiedAt",
+        "reasons"
+      ],
+      "properties": {
+        "verdict": {
+          "type": "string",
+          "enum": [
+            "verified",
+            "tampered",
+            "unsigned",
+            "invalid",
+            "revoked"
+          ],
+          "description": "Overall verification verdict",
+          "examples": [
+            "verified"
+          ]
+        },
+        "verifiedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Verification timestamp (ISO 8601)",
+          "examples": [
+            "2024-01-15T10:35:22Z"
+          ]
+        },
+        "reasons": {
+          "type": "array",
+          "description": "Detailed reasons for the verdict",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "examples": [
+            [
+              "Content binding hash matches",
+              "Signature valid",
+              "Device certificate chain valid",
+              "Hardware attestation present"
+            ]
+          ]
+        },
+        "policyApplied": {
+          "type": "string",
+          "description": "Policy ID that was applied",
+          "examples": [
+            "default",
+            "strict"
+          ]
+        },
+        "policyViolations": {
+          "type": "array",
+          "description": "List of policy violations",
+          "items": {
+            "type": "object",
+            "required": ["policyRule", "message"],
+            "properties": {
+              "policyRule": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "signature": {
+      "type": "object",
+      "description": "Cryptographic signature details",
+      "required": [
+        "algorithm",
+        "valid",
+        "signedAt"
+      ],
+      "properties": {
+        "algorithm": {
+          "type": "string",
+          "enum": [
+            "ES256",
+            "ES384",
+            "ES512",
+            "EdDSA"
+          ],
+          "description": "Signature algorithm",
+          "examples": [
+            "ES256",
+            "EdDSA"
+          ]
+        },
+        "valid": {
+          "type": "boolean",
+          "description": "Whether signature is cryptographically valid",
+          "examples": [
+            true,
+            false
+          ]
+        },
+        "signedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Claimed signing timestamp (ISO 8601)",
+          "examples": [
+            "2024-01-15T10:30:00Z"
+          ]
+        },
+        "publicKeyFingerprint": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "description": "SHA-256 fingerprint of signing public key",
+          "examples": [
+            "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          ]
+        }
+      }
+    },
+    "deviceCertChain": {
+      "type": "array",
+      "description": "Device certificate chain (PEM-encoded, leaf first)",
+      "items": {
+        "type": "object",
+        "required": [
+          "pem",
+          "subject",
+          "issuer",
+          "notBefore",
+          "notAfter",
+          "fingerprint"
+        ],
+        "properties": {
+          "pem": {
+            "type": "string",
+            "description": "PEM-encoded certificate",
+            "examples": [
+              "-----BEGIN CERTIFICATE-----\nMIICeDCCAh6gAwIBAgIBATAKBggqhkjOPQQDAjA5...\n-----END CERTIFICATE-----"
+            ]
+          },
+          "subject": {
+            "type": "string",
+            "description": "Certificate subject DN",
+            "examples": [
+              "CN=Android Keystore Leaf,O=Android,C=US"
+            ]
+          },
+          "issuer": {
+            "type": "string",
+            "description": "Certificate issuer DN",
+            "examples": [
+              "CN=Android Keystore,O=Android,C=US"
+            ]
+          },
+          "notBefore": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Certificate validity start (ISO 8601)",
+            "examples": [
+              "2024-01-15T10:30:00Z"
+            ]
+          },
+          "notAfter": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Certificate validity end (ISO 8601)",
+            "examples": [
+              "2025-01-15T10:30:00Z"
+            ]
+          },
+          "fingerprint": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "description": "SHA-256 fingerprint of certificate",
+            "examples": [
+              "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2"
+            ]
+          },
+          "valid": {
+            "type": "boolean",
+            "description": "Whether certificate is currently valid",
+            "examples": [
+              true
+            ]
+          }
+        }
+      },
+      "minItems": 1
+    },
+    "deviceAttestation": {
+      "type": "object",
+      "description": "Hardware attestation details",
+      "required": [
+        "attestationType",
+        "hardwareBacked",
+        "verified"
+      ],
+      "properties": {
+        "attestationType": {
+          "type": "string",
+          "enum": [
+            "android_key_attestation",
+            "apple_devicecheck",
+            "apple_app_attest",
+            "webauthn",
+            "tpm"
+          ],
+          "description": "Type of hardware attestation",
+          "examples": [
+            "android_key_attestation"
+          ]
+        },
+        "hardwareBacked": {
+          "type": "boolean",
+          "description": "Whether key is hardware-backed",
+          "examples": [
+            true
+          ]
+        },
+        "verified": {
+          "type": "boolean",
+          "description": "Whether attestation was verified",
+          "examples": [
+            true
+          ]
+        },
+        "securityLevel": {
+          "type": "string",
+          "enum": [
+            "strongbox",
+            "trusted_execution_environment",
+            "software"
+          ],
+          "description": "Security level",
+          "examples": [
+            "strongbox"
+          ]
+        },
+        "bootState": {
+          "type": "string",
+          "enum": [
+            "verified",
+            "self_signed",
+            "unverified",
+            "failed"
+          ],
+          "description": "Device boot state (Android)",
+          "examples": [
+            "verified"
+          ]
+        }
+      }
+    },
+    "transparencyLog": {
+      "type": "object",
+      "description": "Transparency log entry and inclusion proof",
+      "required": [
+        "logId",
+        "insertedAt",
+        "merkleRoot"
+      ],
+      "properties": {
+        "logId": {
+          "type": "string",
+          "description": "Transparency log entry identifier",
+          "examples": [
+            "tlog_abc123def456"
+          ]
+        },
+        "insertedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when entry was inserted (ISO 8601)",
+          "examples": [
+            "2024-01-15T10:35:22Z"
+          ]
+        },
+        "merkleRoot": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "description": "Merkle root at time of insertion",
+          "examples": [
+            "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2"
+          ]
+        },
+        "treeSize": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Size of Merkle tree at insertion",
+          "examples": [
+            12345
+          ]
+        },
+        "leafIndex": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Index of this entry in the tree",
+          "examples": [
+            12344
+          ]
+        },
+        "inclusionProof": {
+          "type": "array",
+          "description": "Merkle inclusion proof hashes",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "examples": [
+            [
+              "b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3",
+              "c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4"
+            ]
+          ]
+        }
+      }
+    },
+    "timestamp": {
+      "type": ["object", "null"],
+      "description": "RFC-3161 trusted timestamp (if available)",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Trusted timestamp (ISO 8601)",
+          "examples": [
+            "2024-01-15T10:30:00Z"
+          ]
+        },
+        "timestampToken": {
+          "type": "string",
+          "contentEncoding": "base64",
+          "description": "Base64-encoded RFC-3161 timestamp token",
+          "examples": [
+            "MIIGfwYJKoZIhvcNAQcCoIIGcDCCBmwCAQMxDTALBglghkgBZQMEAgEwga..."
+          ]
+        },
+        "tsaUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL of the timestamp authority",
+          "examples": [
+            "https://tsa.popc.example.com"
+          ]
+        }
+      },
+      "required": ["timestamp", "timestampToken"]
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional metadata from manifest",
+      "properties": {
+        "deviceId": {
+          "type": "string",
+          "pattern": "^dev_[a-z0-9_]+$",
+          "description": "Device identifier",
+          "examples": [
+            "dev_android_pixel7_abc123"
+          ]
+        },
+        "capturedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Capture timestamp (ISO 8601)",
+          "examples": [
+            "2024-01-15T10:30:00Z"
+          ]
+        },
+        "location": {
+          "type": ["object", "null"],
+          "description": "Location data (if available)",
+          "properties": {
+            "latitude": {
+              "type": "number",
+              "minimum": -90,
+              "maximum": 90
+            },
+            "longitude": {
+              "type": "number",
+              "minimum": -180,
+              "maximum": 180
+            },
+            "accuracy": {
+              "type": "number",
+              "minimum": 0
+            }
+          }
+        },
+        "deviceModel": {
+          "type": "string",
+          "examples": [
+            "Pixel 7"
+          ]
+        },
+        "osVersion": {
+          "type": "string",
+          "examples": [
+            "Android 14"
+          ]
+        }
+      }
+    },
+    "chainOfCustody": {
+      "type": "array",
+      "description": "Chain of custody events for this evidence",
+      "items": {
+        "type": "object",
+        "required": ["event", "timestamp", "actor"],
+        "properties": {
+          "event": {
+            "type": "string",
+            "description": "Custody event type",
+            "examples": [
+              "captured",
+              "verified",
+              "evidence_generated",
+              "downloaded"
+            ]
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Event timestamp (ISO 8601)",
+            "examples": [
+              "2024-01-15T10:30:00Z"
+            ]
+          },
+          "actor": {
+            "type": "string",
+            "description": "Actor performing the event",
+            "examples": [
+              "device:dev_android_pixel7_abc123",
+              "api:verification_service",
+              "user:user_abc123"
+            ]
+          },
+          "details": {
+            "type": "object",
+            "description": "Additional event details",
+            "additionalProperties": true
+          }
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "packageVersion": "1.0",
+      "verificationId": "ver_1a2b3c4d5e6f",
+      "generatedAt": "2024-01-15T10:35:22Z",
+      "asset": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "sizeBytes": 1024000,
+        "mimeType": "image/jpeg",
+        "fileName": "photo_2024-01-15.jpg",
+        "url": "https://cdn.popc.example.com/assets/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855?signature=..."
+      },
+      "manifest": {
+        "format": "c2pa-1.0",
+        "raw": "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9...",
+        "contentBinding": {
+          "algorithm": "sha256",
+          "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matches": true
+        }
+      },
+      "verification": {
+        "verdict": "verified",
+        "verifiedAt": "2024-01-15T10:35:22Z",
+        "reasons": [
+          "Content binding hash matches",
+          "Signature valid",
+          "Device certificate chain valid",
+          "Hardware attestation present"
+        ],
+        "policyApplied": "default",
+        "policyViolations": []
+      },
+      "signature": {
+        "algorithm": "ES256",
+        "valid": true,
+        "signedAt": "2024-01-15T10:30:00Z",
+        "publicKeyFingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "deviceCertChain": [
+        {
+          "pem": "-----BEGIN CERTIFICATE-----\nMIICeDCCAh6gAwIBAgIBATAKBggqhkjOPQQDAjA5...\n-----END CERTIFICATE-----",
+          "subject": "CN=Android Keystore Leaf,O=Android,C=US",
+          "issuer": "CN=Android Keystore,O=Android,C=US",
+          "notBefore": "2024-01-15T10:30:00Z",
+          "notAfter": "2025-01-15T10:30:00Z",
+          "fingerprint": "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2",
+          "valid": true
+        }
+      ],
+      "deviceAttestation": {
+        "attestationType": "android_key_attestation",
+        "hardwareBacked": true,
+        "verified": true,
+        "securityLevel": "strongbox",
+        "bootState": "verified"
+      },
+      "transparencyLog": {
+        "logId": "tlog_abc123def456",
+        "insertedAt": "2024-01-15T10:35:22Z",
+        "merkleRoot": "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2",
+        "treeSize": 12345,
+        "leafIndex": 12344,
+        "inclusionProof": [
+          "b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3",
+          "c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4"
+        ]
+      },
+      "timestamp": {
+        "timestamp": "2024-01-15T10:30:00Z",
+        "timestampToken": "MIIGfwYJKoZIhvcNAQcCoIIGcDCCBmwCAQMxDTALBglghkgBZQMEAgEwga...",
+        "tsaUrl": "https://tsa.popc.example.com"
+      },
+      "metadata": {
+        "deviceId": "dev_android_pixel7_abc123",
+        "capturedAt": "2024-01-15T10:30:00Z",
+        "location": {
+          "latitude": 37.7749,
+          "longitude": -122.4194,
+          "accuracy": 10
+        },
+        "deviceModel": "Pixel 7",
+        "osVersion": "Android 14"
+      },
+      "chainOfCustody": [
+        {
+          "event": "captured",
+          "timestamp": "2024-01-15T10:30:00Z",
+          "actor": "device:dev_android_pixel7_abc123"
+        },
+        {
+          "event": "verified",
+          "timestamp": "2024-01-15T10:35:22Z",
+          "actor": "api:verification_service"
+        },
+        {
+          "event": "evidence_generated",
+          "timestamp": "2024-01-15T10:35:22Z",
+          "actor": "api:evidence_service"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,93 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://api.popc.example.com/schemas/VerifyRequest.json",
+  "title": "VerifyRequest",
+  "description": "Request to verify media authenticity",
+  "type": "object",
+  "oneOf": [
+    {
+      "title": "URL-based verification",
+      "required": ["assetUrl", "manifestUrl"],
+      "properties": {
+        "assetUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to the media asset (photo or video)",
+          "maxLength": 2048,
+          "examples": [
+            "https://cdn.example.com/photos/image123.jpg",
+            "https://storage.example.com/videos/clip456.mp4"
+          ]
+        },
+        "manifestUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to the C2PA manifest file",
+          "maxLength": 2048,
+          "examples": [
+            "https://cdn.example.com/photos/image123.jpg.c2pa",
+            "https://storage.example.com/videos/clip456.mp4.c2pa"
+          ]
+        },
+        "policyId": {
+          "$ref": "#/$defs/policyId"
+        }
+      }
+    },
+    {
+      "title": "Base64-encoded verification",
+      "required": ["assetBase64", "manifestBase64"],
+      "properties": {
+        "assetBase64": {
+          "type": "string",
+          "contentEncoding": "base64",
+          "description": "Base64-encoded media asset bytes",
+          "maxLength": 134217728,
+          "examples": [
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+          ]
+        },
+        "manifestBase64": {
+          "type": "string",
+          "contentEncoding": "base64",
+          "description": "Base64-encoded C2PA manifest bytes",
+          "maxLength": 10485760,
+          "examples": [
+            "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9..."
+          ]
+        },
+        "policyId": {
+          "$ref": "#/$defs/policyId"
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "policyId": {
+      "type": "string",
+      "description": "Policy identifier to apply during verification",
+      "default": "default",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[a-z0-9_-]+$",
+      "examples": [
+        "default",
+        "strict",
+        "enterprise",
+        "legal_admissible"
+      ]
+    }
+  },
+  "examples": [
+    {
+      "assetUrl": "https://cdn.example.com/photos/image123.jpg",
+      "manifestUrl": "https://cdn.example.com/photos/image123.jpg.c2pa",
+      "policyId": "default"
+    },
+    {
+      "assetBase64": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+      "manifestBase64": "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiIsImtpZCI6ImRldl9hbmRyb2lkX3BpeGVsN19hYmMxMjMifQ.eyJhc3NlcnRpb25zIjp7ImMycGEuaGFzaC5kYXRhIjp7ImFsZyI6InNoYTI1NiIsImhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1In19fQ.MEUCIQDa1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1vAiB2w3x4y5z6A7B8C9D0E1F2G3H4I5J6K7L8M9N0O1P2Q3R",
+      "policyId": "strict"
+    }
+  ]
+}

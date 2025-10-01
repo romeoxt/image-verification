@@ -1,0 +1,283 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://api.popc.example.com/schemas/EnrollmentResponse.json",
+  "title": "EnrollmentResponse",
+  "description": "Response from device enrollment",
+  "type": "object",
+  "required": [
+    "deviceId",
+    "enrolledAt",
+    "status",
+    "attestationVerified"
+  ],
+  "properties": {
+    "deviceId": {
+      "type": "string",
+      "pattern": "^dev_[a-z0-9_]+$",
+      "description": "Unique device identifier for future verifications",
+      "examples": [
+        "dev_android_pixel7_abc123",
+        "dev_ios_iphone15_xyz789",
+        "dev_web_chrome_def456"
+      ]
+    },
+    "enrolledAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when device was enrolled (ISO 8601)",
+      "examples": [
+        "2024-01-15T10:30:00Z",
+        "2024-03-22T14:45:30.123Z"
+      ]
+    },
+    "expiresAt": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "Timestamp when enrollment expires (ISO 8601), null for no expiration",
+      "examples": [
+        "2025-01-15T10:30:00Z",
+        null
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "pending_verification",
+        "expired",
+        "revoked"
+      ],
+      "description": "Current enrollment status",
+      "examples": [
+        "active",
+        "pending_verification"
+      ]
+    },
+    "attestationVerified": {
+      "type": "boolean",
+      "description": "Whether hardware attestation was successfully verified",
+      "examples": [
+        true,
+        false
+      ]
+    },
+    "attestationDetails": {
+      "type": "object",
+      "description": "Details about the attestation verification",
+      "properties": {
+        "attestationType": {
+          "type": "string",
+          "enum": [
+            "android_key_attestation",
+            "apple_devicecheck",
+            "apple_app_attest",
+            "webauthn",
+            "tpm"
+          ],
+          "description": "Type of hardware attestation",
+          "examples": [
+            "android_key_attestation",
+            "apple_app_attest"
+          ]
+        },
+        "hardwareBacked": {
+          "type": "boolean",
+          "description": "Whether the key is hardware-backed (in TEE/Secure Enclave)",
+          "examples": [
+            true
+          ]
+        },
+        "bootState": {
+          "type": "string",
+          "enum": [
+            "verified",
+            "self_signed",
+            "unverified",
+            "failed"
+          ],
+          "description": "Device boot state (Android only)",
+          "examples": [
+            "verified"
+          ]
+        },
+        "securityLevel": {
+          "type": "string",
+          "enum": [
+            "strongbox",
+            "trusted_execution_environment",
+            "software"
+          ],
+          "description": "Security level of the key storage",
+          "examples": [
+            "strongbox",
+            "trusted_execution_environment"
+          ]
+        },
+        "certFingerprint": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "description": "SHA-256 fingerprint of the leaf certificate",
+          "examples": [
+            "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2"
+          ]
+        },
+        "attestationVersion": {
+          "type": "integer",
+          "description": "Attestation format version (Android only)",
+          "minimum": 1,
+          "examples": [
+            3,
+            4
+          ]
+        }
+      },
+      "required": ["attestationType", "hardwareBacked"]
+    },
+    "publicKeyFingerprint": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "description": "SHA-256 fingerprint of the enrolled public key",
+      "examples": [
+        "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      ]
+    },
+    "deviceMetadata": {
+      "type": "object",
+      "description": "Enrolled device metadata",
+      "properties": {
+        "platform": {
+          "type": "string",
+          "enum": [
+            "android",
+            "ios",
+            "web"
+          ],
+          "description": "Device platform",
+          "examples": [
+            "android",
+            "ios"
+          ]
+        },
+        "manufacturer": {
+          "type": "string",
+          "description": "Device manufacturer",
+          "examples": [
+            "Google",
+            "Apple"
+          ]
+        },
+        "model": {
+          "type": "string",
+          "description": "Device model",
+          "examples": [
+            "Pixel 7",
+            "iPhone 15 Pro"
+          ]
+        },
+        "osVersion": {
+          "type": "string",
+          "description": "Operating system version",
+          "examples": [
+            "14",
+            "17.2"
+          ]
+        }
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "description": "Warnings or notes about the enrollment",
+      "items": {
+        "type": "string"
+      },
+      "examples": [
+        [
+          "Device certificate will expire in 30 days",
+          "Software-backed key detected (hardware-backed preferred)"
+        ],
+        []
+      ]
+    },
+    "apiKeyHint": {
+      "type": "string",
+      "description": "Hint for which API key should be used for this device (if using device-specific keys)",
+      "examples": [
+        "Use your organization API key for verification requests"
+      ]
+    }
+  },
+  "examples": [
+    {
+      "deviceId": "dev_android_pixel7_abc123",
+      "enrolledAt": "2024-01-15T10:30:00Z",
+      "expiresAt": "2025-01-15T10:30:00Z",
+      "status": "active",
+      "attestationVerified": true,
+      "attestationDetails": {
+        "attestationType": "android_key_attestation",
+        "hardwareBacked": true,
+        "bootState": "verified",
+        "securityLevel": "strongbox",
+        "certFingerprint": "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2",
+        "attestationVersion": 4
+      },
+      "publicKeyFingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "deviceMetadata": {
+        "platform": "android",
+        "manufacturer": "Google",
+        "model": "Pixel 7",
+        "osVersion": "14"
+      },
+      "warnings": [],
+      "apiKeyHint": "Use your organization API key for verification requests"
+    },
+    {
+      "deviceId": "dev_ios_iphone15_xyz789",
+      "enrolledAt": "2024-03-22T14:45:30.123Z",
+      "expiresAt": null,
+      "status": "active",
+      "attestationVerified": true,
+      "attestationDetails": {
+        "attestationType": "apple_app_attest",
+        "hardwareBacked": true,
+        "securityLevel": "trusted_execution_environment",
+        "certFingerprint": "b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3"
+      },
+      "publicKeyFingerprint": "d4f5e6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5",
+      "deviceMetadata": {
+        "platform": "ios",
+        "manufacturer": "Apple",
+        "model": "iPhone 15 Pro",
+        "osVersion": "17.2"
+      },
+      "warnings": [],
+      "apiKeyHint": "Use your organization API key for verification requests"
+    },
+    {
+      "deviceId": "dev_android_samsung_def456",
+      "enrolledAt": "2024-02-10T08:15:00Z",
+      "expiresAt": "2025-02-10T08:15:00Z",
+      "status": "active",
+      "attestationVerified": true,
+      "attestationDetails": {
+        "attestationType": "android_key_attestation",
+        "hardwareBacked": true,
+        "bootState": "verified",
+        "securityLevel": "trusted_execution_environment",
+        "certFingerprint": "c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4",
+        "attestationVersion": 3
+      },
+      "publicKeyFingerprint": "f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7",
+      "deviceMetadata": {
+        "platform": "android",
+        "manufacturer": "Samsung",
+        "model": "Galaxy S24",
+        "osVersion": "14"
+      },
+      "warnings": [
+        "TEE level detected (StrongBox preferred for highest security)"
+      ],
+      "apiKeyHint": "Use your organization API key for verification requests"
+    }
+  ]
+}

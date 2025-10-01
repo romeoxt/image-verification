@@ -1,0 +1,178 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://api.popc.example.com/schemas/EnrollmentRequest.json",
+  "title": "EnrollmentRequest",
+  "description": "Request to enroll a device with hardware attestation",
+  "type": "object",
+  "required": [
+    "platform",
+    "publicKey",
+    "attestationCertChain",
+    "attestationType"
+  ],
+  "properties": {
+    "platform": {
+      "type": "string",
+      "enum": [
+        "android",
+        "ios",
+        "web"
+      ],
+      "description": "Device platform",
+      "examples": [
+        "android",
+        "ios"
+      ]
+    },
+    "publicKey": {
+      "type": "string",
+      "contentEncoding": "base64",
+      "description": "Base64-encoded public key (DER-encoded SubjectPublicKeyInfo)",
+      "minLength": 1,
+      "maxLength": 8192,
+      "examples": [
+        "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEZ8hZL8aXz9KqF5L3m9C2V1K8yJ9rH3dE4P6N7T8wQ1aB5xC7yD9zE0fG2hI3jK4lM5nO6pQ7rS8tU9vW0xX1yYz=="
+      ]
+    },
+    "attestationCertChain": {
+      "type": "array",
+      "description": "Certificate chain for hardware attestation (PEM-encoded, leaf first)",
+      "items": {
+        "type": "string",
+        "description": "PEM-encoded X.509 certificate"
+      },
+      "minItems": 1,
+      "maxItems": 10,
+      "examples": [
+        [
+          "-----BEGIN CERTIFICATE-----\nMIICeDCCAh6gAwIBAgIBATAKBggqhkjOPQQDAjA5MQswCQYDVQQGEwJVUzEQMA4G\nA1UECgwHQW5kcm9pZDEYMBYGA1UEAwwPQW5kcm9pZCBLZXlzdG9yZTAeFw0yNDAx\n...\n-----END CERTIFICATE-----",
+          "-----BEGIN CERTIFICATE-----\nMIICmTCCAkCgAwIBAgIJANg8w7F2L3K9MAoGCCqGSM49BAMCMDkxCzAJBgNVBAYT\nAlVTMRAwDgYDVQQKDAdBbmRyb2lkMRgwFgYDVQQDDA9BbmRyb2lkIEtleXN0b3Jl\n...\n-----END CERTIFICATE-----"
+        ]
+      ]
+    },
+    "attestationType": {
+      "type": "string",
+      "enum": [
+        "android_key_attestation",
+        "apple_devicecheck",
+        "apple_app_attest",
+        "webauthn",
+        "tpm"
+      ],
+      "description": "Type of hardware attestation",
+      "examples": [
+        "android_key_attestation",
+        "apple_app_attest"
+      ]
+    },
+    "deviceMetadata": {
+      "type": "object",
+      "description": "Additional device metadata",
+      "properties": {
+        "manufacturer": {
+          "type": "string",
+          "description": "Device manufacturer",
+          "maxLength": 128,
+          "examples": [
+            "Google",
+            "Apple",
+            "Samsung"
+          ]
+        },
+        "model": {
+          "type": "string",
+          "description": "Device model",
+          "maxLength": 128,
+          "examples": [
+            "Pixel 7",
+            "iPhone 15 Pro",
+            "Galaxy S24"
+          ]
+        },
+        "osVersion": {
+          "type": "string",
+          "description": "Operating system version",
+          "maxLength": 64,
+          "examples": [
+            "14",
+            "17.2",
+            "Android 14",
+            "iOS 17.2"
+          ]
+        },
+        "sdkVersion": {
+          "type": "string",
+          "description": "PoPC SDK version",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "examples": [
+            "1.0.0",
+            "1.2.3"
+          ]
+        },
+        "appId": {
+          "type": "string",
+          "description": "Application identifier (bundle ID or package name)",
+          "maxLength": 256,
+          "examples": [
+            "com.example.camera",
+            "com.company.app"
+          ]
+        }
+      }
+    },
+    "nonce": {
+      "type": "string",
+      "contentEncoding": "base64",
+      "description": "Base64-encoded nonce for replay protection (optional but recommended)",
+      "minLength": 16,
+      "maxLength": 128,
+      "examples": [
+        "aGVsbG8gd29ybGQgbm9uY2UgZXhhbXBsZQ=="
+      ]
+    },
+    "challenge": {
+      "type": "string",
+      "contentEncoding": "base64",
+      "description": "Base64-encoded challenge from server (if using challenge-response flow)",
+      "minLength": 16,
+      "maxLength": 128,
+      "examples": [
+        "Y2hhbGxlbmdlIGV4YW1wbGUgZnJvbSBzZXJ2ZXI="
+      ]
+    }
+  },
+  "examples": [
+    {
+      "platform": "android",
+      "publicKey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEZ8hZL8aXz9KqF5L3m9C2V1K8yJ9rH3dE4P6N7T8wQ1aB5xC7yD9zE0fG2hI3jK4lM5nO6pQ7rS8tU9vW0xX1yYz==",
+      "attestationCertChain": [
+        "-----BEGIN CERTIFICATE-----\nMIICeDCCAh6gAwIBAgIBATAKBggqhkjOPQQDAjA5MQswCQYDVQQGEwJVUzEQMA4G\nA1UECgwHQW5kcm9pZDEYMBYGA1UEAwwPQW5kcm9pZCBLZXlzdG9yZTAeFw0yNDAx\nMTUxMDMwMDBaFw0yNTAxMTUxMDMwMDBaMEExCzAJBgNVBAYTAlVTMRAwDgYDVQQK\nDAdBbmRyb2lkMSAwHgYDVQQDDBdBbmRyb2lkIEtleXN0b3JlIExlYWYwWTATBgcq\nhkjOPQIBBggqhkjOPQMBBwNCAARnyFkvxpfP0qoXkveb0LZXUrzIn2sfd0Tg/o3t\nPzBDVoHnELvIP3MTR8baEjeMriUzmc7qlDutLy1T29bTFfXJjKMhMB8wHQYDVR0O\nBBYEFJxKLm3qP8r9w0y1Z2a3b4c5d6e7MAoGCCqGSM49BAMCA0gAMEUCIQDa1b2c\n3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1vAiB2w3x4y5z6A7B8C9D0E1F2G3\nH4I5J6K7L8M9N0O1P2Q3R\n-----END CERTIFICATE-----",
+        "-----BEGIN CERTIFICATE-----\nMIICmTCCAkCgAwIBAgIJANg8w7F2L3K9MAoGCCqGSM49BAMCMDkxCzAJBgNVBAYT\nAlVTMRAwDgYDVQQKDAdBbmRyb2lkMRgwFgYDVQQDDA9BbmRyb2lkIEtleXN0b3Jl\nMB4XDTI0MDExNTEwMDAwMFoXDTI5MDExNTEwMDAwMFowOTELMAkGA1UEBhMCVVMx\nEDAOBgNVBAoMB0FuZHJvaWQxGDAWBgNVBAMMD0FuZHJvaWQgS2V5c3RvcmUwWTAT\nBgcqhkjOPQIBBggqhkjOPQMBBwNCAATz0u1v2w3x4y5z6A7B8C9D0E1F2G3H4I5J\n6K7L8M9N0O1P2Q3R4S5T6U7V8W9X0Y1Z2a3b4c5d6e7f8g9h0i1j2KNjMGEwHQYD\nVR0OBBYEFPPSrW/bDfHjLnPoDsHwL0PQTUXYMAsGA1UdDwQEAwIBBjAPBgNVHRMB\nAf8EBTADAQH/MCIGA1UdEQQbMBmBF3N1cHBvcnRAYW5kcm9pZC5leGFtcGxlMAoG\nCCqGSM49BAMCA0gAMEUCIQC0a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0\nu1vAiAhwI3jK4lM5nO6pQ7rS8tU9vW0xX1yYzA4B5C6D7E8F\n-----END CERTIFICATE-----"
+      ],
+      "attestationType": "android_key_attestation",
+      "deviceMetadata": {
+        "manufacturer": "Google",
+        "model": "Pixel 7",
+        "osVersion": "14",
+        "sdkVersion": "1.0.0",
+        "appId": "com.example.camera"
+      },
+      "nonce": "aGVsbG8gd29ybGQgbm9uY2UgZXhhbXBsZQ=="
+    },
+    {
+      "platform": "ios",
+      "publicKey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEaB5cC7dD9eE0fF2gG3hH4iI5jJ6kK7lL8mM9nN0oO1pP2qQ3rR4sS5tT6uU7vV8wW9xX0yY1zZ2a3b4c5d6e7f==",
+      "attestationCertChain": [
+        "-----BEGIN CERTIFICATE-----\nMIICeDCCAh6gAwIBAgIBATAKBggqhkjOPQQDAjA1MQswCQYDVQQGEwJVUzEOMAwG\nA1UECgwFQXBwbGUxFjAUBgNVBAMMDUFwcGxlIFJvb3QgQ0EwHhcNMjQwMTE1MTAz\nMDAwWhcNMjUwMTE1MTAzMDAwWjA9MQswCQYDVQQGEwJVUzEOMAwGA1UECgwFQXBw\nbGUxHjAcBgNVBAMMFUFwcGxlIEFwcCBBdHRlc3QgTGVhZjBZMBMGByqGSM49AgEG\nCCqGSM49AwEHA0IABGgeXAu3Q/XhNHxdoBt4R+IiOYyepCu5S/JjPZzdKDtaT9qk\nN60eLEubU+rlO71fMFvcV9MmNc2dmt2+HOXent+jITAfMB0GA1UdDgQWBBRoHlwL\nt0P14TR8XaAbeEfiIjmMnqMKBggqhkjOPQQDAgNIADBFAiEA2tW9nN3eHuX+oO4f\nIvY9JNZdpt5+KOaequ6/LPbdLtbwIgdsN8eMuc+gOwfAvQ9BNRdhx+COSeiuy/DP\nTdDtT9kN0e0=\n-----END CERTIFICATE-----"
+      ],
+      "attestationType": "apple_app_attest",
+      "deviceMetadata": {
+        "manufacturer": "Apple",
+        "model": "iPhone 15 Pro",
+        "osVersion": "17.2",
+        "sdkVersion": "1.0.0",
+        "appId": "com.example.camera"
+      }
+    }
+  ]
+}

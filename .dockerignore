@@ -1,0 +1,70 @@
+# Dependencies
+node_modules
+**/node_modules
+
+# Build outputs
+dist
+**/dist
+build
+**/build
+
+# Tests
+**/*.test.ts
+**/*.test.js
+**/test
+**/tests
+
+# Development files
+**/.env
+**/.env.*
+!**/.env.example
+
+# Git
+.git
+.gitignore
+**/.git
+**/.gitignore
+
+# Documentation
+*.md
+!README.md
+docs/*.md
+CHANGELOG.md
+PR_SUMMARY.md
+
+# IDE
+.vscode
+.idea
+**/.vscode
+**/.idea
+
+# Logs
+logs
+*.log
+npm-debug.log*
+**/logs
+**/*.log
+
+# OS
+.DS_Store
+**/.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.swp
+*.swo
+*~
+
+# Coverage
+coverage
+**/.nyc_output
+**/coverage
+
+# Docker
+Dockerfile
+.dockerignore
+docker-compose.yml
+
+# CI/CD
+.github

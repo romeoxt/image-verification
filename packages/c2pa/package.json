@@ -1,0 +1,23 @@
+{
+  "name": "@popc/c2pa",
+  "version": "0.2.0",
+  "description": "C2PA manifest utilities for PoPC with real signature verification",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "NODE_OPTIONS='--loader tsx' node --test test/**/*.test.ts"
+  },
+  "dependencies": {
+    "jose": "^5.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.16",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
