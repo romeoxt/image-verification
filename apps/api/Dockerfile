@@ -5,18 +5,23 @@ FROM node:20-slim AS builder
 
 WORKDIR /app
 
-# Copy entire monorepo for file: protocol dependencies
-COPY . .
+# Copy package files for dependency installation
+COPY package*.json ./
+COPY packages/c2pa/package*.json ./packages/c2pa/
+COPY apps/api/package*.json ./apps/api/
 
-# Install and build c2pa package first (required dependency)
-RUN cd packages/c2pa && \
-    npm ci && \
-    npm run build
+# Install all dependencies using workspace
+RUN npm ci
 
-# Install and build API
-RUN cd apps/api && \
-    npm ci && \
-    npm run build
+# Copy source code
+COPY packages/c2pa ./packages/c2pa
+COPY apps/api ./apps/api
+
+# Build c2pa package first (required dependency)
+RUN npm run build --workspace=@popc/c2pa
+
+# Build API
+RUN npm run build --workspace=@popc/api
 
 # Production stage
 FROM node:20-slim
