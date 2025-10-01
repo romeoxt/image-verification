@@ -5,11 +5,17 @@
 import Fastify from 'fastify';
 import fastifyMultipart from '@fastify/multipart';
 import fastifyCors from '@fastify/cors';
+import fastifyStatic from '@fastify/static';
 import { config as loadEnv } from 'dotenv';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 import { initDb, closeDb } from './lib/db.js';
 import { verifyRoutes } from './routes/verify.js';
 import { evidenceRoutes } from './routes/evidence.js';
 import type { Config } from './types/index.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // Load environment variables
 loadEnv();
@@ -63,6 +69,12 @@ async function registerPlugins() {
       fileSize: config.maxAssetSize,
       files: 10,
     },
+  });
+
+  // Static files (for browser UI)
+  await fastify.register(fastifyStatic, {
+    root: join(__dirname, '../public'),
+    prefix: '/ui/',
   });
 }
 

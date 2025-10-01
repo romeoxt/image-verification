@@ -27,6 +27,7 @@ WORKDIR /app
 COPY --from=builder /app/apps/api/dist ./apps/api/dist
 COPY --from=builder /app/apps/api/package.json ./apps/api/package.json
 COPY --from=builder /app/apps/api/node_modules ./apps/api/node_modules
+COPY --from=builder /app/apps/api/public ./apps/api/public
 
 # Copy c2pa package (runtime dependency)
 COPY --from=builder /app/packages/c2pa/dist ./packages/c2pa/dist
