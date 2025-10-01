@@ -225,6 +225,16 @@ export async function verifyRoutes(fastify: FastifyInstance) {
       return reply.code(200).send(response);
     } catch (error) {
       fastify.log.error(error);
+      
+      // Provide more specific error messages for common issues
+      const errorMessage = (error as Error).message;
+      if (errorMessage.includes('fetch') || errorMessage.includes('network')) {
+        return reply.code(400).send({
+          error: 'fetch_error',
+          message: 'Unable to fetch image from URL. Please try uploading the image directly using base64 encoding.',
+        });
+      }
+      
       return reply.code(500).send({
         error: 'internal_error',
         message: 'An unexpected error occurred during verification',
@@ -310,14 +320,26 @@ async function handleJsonRequest(body: VerifyRequestJson): Promise<{
  * Fetch URL and return bytes
  */
 async function fetchUrl(url: string): Promise<Buffer> {
-  const response = await fetch(url);
+  try {
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': process.env.USER_AGENT || 'PoPC-Verification-API/1.0',
+        'Accept': 'image/*,*/*',
+      },
+      // Railway may have network restrictions, so we'll handle errors gracefully
+    });
 
-  if (!response.ok) {
-    throw new Error(`Failed to fetch ${url}: ${response.statusText}`);
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const arrayBuffer = await response.arrayBuffer();
+    return Buffer.from(arrayBuffer);
+  } catch (error) {
+    // Log the error for debugging but don't expose internal details
+    console.error('Fetch error for URL:', url, 'Error:', (error as Error).message);
+    throw new Error(`Unable to fetch image from URL. This may be due to network restrictions or invalid URL.`);
   }
-
-  const arrayBuffer = await response.arrayBuffer();
-  return Buffer.from(arrayBuffer);
 }
 
 /**

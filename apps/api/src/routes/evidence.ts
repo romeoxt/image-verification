@@ -71,11 +71,11 @@ export async function evidenceRoutes(fastify: FastifyInstance) {
     try {
       const { verificationId } = request.params as EvidenceParams;
 
-      // Validate verification ID format
-      if (!verificationId.match(/^ver_[a-z0-9]+$/)) {
+      // Validate verification ID format (UUID)
+      if (!verificationId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
         return reply.code(400).send({
           error: 'invalid_verification_id',
-          message: 'Verification ID must match pattern: ver_[a-z0-9]+',
+          message: 'Verification ID must be a valid UUID',
         });
       }
 
