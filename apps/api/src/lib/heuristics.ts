@@ -6,7 +6,6 @@
  */
 
 import exifr from 'exifr';
-import jpeg from 'jpeg-js';
 
 // Type definitions matching OpenAPI HeuristicSignals schema
 export interface ExifSignals {
@@ -68,7 +67,6 @@ export async function analyzeExif(buffer: Buffer): Promise<ExifSignals> {
       tiff: true,
       exif: true,
       gps: true,
-      ifd0: true,
       ifd1: false,
       interop: false,
     });
@@ -136,7 +134,6 @@ export async function analyzeJpeg(buffer: Buffer): Promise<JpegSignals> {
     // Detect progressive JPEG by checking for SOF2 (0xFFC2) marker
     let isProgressive = false;
     let appMarkerCount = 0;
-    let hasQuantTableAnomalies = false;
     const quantTables: number[][] = [];
 
     // Parse JPEG markers
@@ -161,7 +158,6 @@ export async function analyzeJpeg(buffer: Buffer): Promise<JpegSignals> {
 
       // DQT (Define Quantization Table) marker
       if (marker === 0xDB) {
-        const length = (buffer[offset + 2] << 8) | buffer[offset + 3];
         // Basic check: multiple DQT segments or unusual table values
         quantTables.push([]);
       }

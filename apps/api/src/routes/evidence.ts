@@ -133,7 +133,7 @@ export async function evidenceRoutes(fastify: FastifyInstance) {
       // Step 3: Load device certificate chain (if device exists)
       let deviceCerts: DeviceCertRow[] = [];
       if (device) {
-        deviceCerts = await query<DeviceCertRow>(
+        const certsResult = await query<DeviceCertRow>(
           `SELECT
             id,
             device_id,
@@ -151,6 +151,7 @@ export async function evidenceRoutes(fastify: FastifyInstance) {
           ORDER BY chain_position ASC NULLS LAST`,
           [device.id]
         );
+        deviceCerts = certsResult.rows;
       }
 
       // Step 4: Load policy (if present)

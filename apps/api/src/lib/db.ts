@@ -59,7 +59,7 @@ export async function closeDb(): Promise<void> {
 /**
  * Execute a query
  */
-export async function query<T = any>(
+export async function query<T extends pg.QueryResultRow = any>(
   text: string,
   params?: any[]
 ): Promise<pg.QueryResult<T>> {
@@ -70,7 +70,7 @@ export async function query<T = any>(
 /**
  * Execute a query and return a single row
  */
-export async function queryOne<T = any>(
+export async function queryOne<T extends pg.QueryResultRow = any>(
   text: string,
   params?: any[]
 ): Promise<T | null> {
@@ -81,7 +81,7 @@ export async function queryOne<T = any>(
 /**
  * Execute a query and return all rows
  */
-export async function queryMany<T = any>(text: string, params?: any[]): Promise<T[]> {
+export async function queryMany<T extends pg.QueryResultRow = any>(text: string, params?: any[]): Promise<T[]> {
   const result = await query<T>(text, params);
   return result.rows;
 }

@@ -7,10 +7,10 @@ import type { FastifyPluginAsync } from 'fastify';
 import { randomUUID } from 'crypto';
 import {
   verifyAndroidKeyAttestation,
-  verifyAppleAppAtest,
+  verifyAppleAppAttest,
   type SecurityLevel
 } from '../lib/attestation.js';
-import { db } from '../lib/db.js';
+import { getDb } from '../lib/db.js';
 
 interface AndroidEnrollRequest {
   platform: 'android';
@@ -139,7 +139,7 @@ export const enrollRoutes: FastifyPluginAsync = async (fastify) => {
 
         // Extract cert fingerprint and expiry
         const leafCert = attestationResult.certificateChainInfo?.[0];
-        const certFingerprint = leafCert?.fingerprint || null;
+        const certFingerprint = leafCert?.fingerprintSha256 || null;
         const certExpiry = leafCert?.notAfter ? new Date(leafCert.notAfter) : null;
         const expiresAt = certExpiry ? certExpiry.toISOString() : null;
 
@@ -151,6 +151,7 @@ export const enrollRoutes: FastifyPluginAsync = async (fastify) => {
         }
 
         // Insert into database
+        const db = getDb();
         await db.query(
           `INSERT INTO devices (device_id, platform, public_key_fingerprint, attestation_type,
            security_level, enrolled_at, cert_expiry, device_metadata, status)
@@ -203,7 +204,7 @@ export const enrollRoutes: FastifyPluginAsync = async (fastify) => {
                 deviceId,
                 i,
                 certChainPem[i],
-                cert.fingerprint,
+                cert.fingerprintSha256,
                 cert.issuer,
                 cert.subject,
                 cert.notBefore,
@@ -252,6 +253,7 @@ export const enrollRoutes: FastifyPluginAsync = async (fastify) => {
 
         const attestationBuffer = Buffer.from(attestationObj, 'base64');
         const clientDataBuffer = clientDataJSON ? Buffer.from(clientDataJSON, 'base64') : undefined;
+        const db = getDb();
 
         const attestationResult = await verifyAppleAppAttest(
           attestationBuffer,
@@ -269,7 +271,7 @@ export const enrollRoutes: FastifyPluginAsync = async (fastify) => {
 
         // Extract cert fingerprint and expiry
         const leafCert = attestationResult.certificateChainInfo?.[0];
-        const certFingerprint = leafCert?.fingerprint || null;
+        const certFingerprint = leafCert?.fingerprintSha256 || null;
         const certExpiry = leafCert?.notAfter ? new Date(leafCert.notAfter) : null;
         const expiresAt = certExpiry ? certExpiry.toISOString() : null;
 
@@ -332,8 +334,8 @@ export const enrollRoutes: FastifyPluginAsync = async (fastify) => {
               [
                 deviceId,
                 i,
-                cert.pem,
-                cert.fingerprint,
+                '', // cert.pem not available in CertificateInfo
+                cert.fingerprintSha256,
                 cert.issuer,
                 cert.subject,
                 cert.notBefore,
