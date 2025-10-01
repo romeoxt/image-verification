@@ -172,7 +172,7 @@ async function shutdown(signal: string) {
     fastify.log.info('Server closed successfully');
     process.exit(0);
   } catch (error) {
-    fastify.log.error('Error during shutdown:', error as Error);
+    fastify.log.error(error, 'Error during shutdown');
     process.exit(1);
   }
 }
