@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/enrollFragment">
+
+    <fragment
+        android:id="@+id/enrollFragment"
+        android:name="com.popc.android.ui.EnrollFragment"
+        android:label="Enrollment">
+        <action
+            android:id="@+id/action_enroll_to_capture"
+            app:destination="@id/captureFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/captureFragment"
+        android:name="com.popc.android.ui.CaptureFragment"
+        android:label="Capture &amp; Verify">
+        <action
+            android:id="@+id/action_capture_to_evidence"
+            app:destination="@id/evidenceFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/evidenceFragment"
+        android:name="com.popc.android.ui.EvidenceFragment"
+        android:label="Evidence Package">
+        <argument
+            android:name="verificationId"
+            app:argType="string" />
+    </fragment>
+
+</navigation>
