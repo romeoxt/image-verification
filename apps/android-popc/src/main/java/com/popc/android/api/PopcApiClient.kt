@@ -1,6 +1,7 @@
 package com.popc.android.api
 
 import com.popc.android.BuildConfig
+import com.popc.android.utils.MimeTypeHelper
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.asRequestBody
@@ -81,12 +82,14 @@ class PopcApiClient(
      * Verify image with manifest
      */
     fun verify(imageFile: File, manifestFile: File): VerificationResponse {
+        val mimeType = MimeTypeHelper.getMimeType(imageFile)
+
         val requestBody = MultipartBody.Builder()
             .setType(MultipartBody.FORM)
             .addFormDataPart(
                 "asset",
                 imageFile.name,
-                imageFile.asRequestBody("image/jpeg".toMediaType())
+                imageFile.asRequestBody(mimeType.toMediaType())
             )
             .addFormDataPart(
                 "manifest",
@@ -115,12 +118,14 @@ class PopcApiClient(
      * Verify image only (heuristic mode, no manifest)
      */
     fun verifyHeuristic(imageFile: File): VerificationResponse {
+        val mimeType = MimeTypeHelper.getMimeType(imageFile)
+
         val requestBody = MultipartBody.Builder()
             .setType(MultipartBody.FORM)
             .addFormDataPart(
                 "asset",
                 imageFile.name,
-                imageFile.asRequestBody("image/jpeg".toMediaType())
+                imageFile.asRequestBody(mimeType.toMediaType())
             )
             .build()
 
