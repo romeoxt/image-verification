@@ -410,60 +410,35 @@ export const enrollRoutes: FastifyPluginAsync = async (fastify) => {
         const db = getDb();
 
         // Insert into database
-        await db.query(
-          `INSERT INTO devices (device_id, platform, public_key_fingerprint, attestation_type,
-           security_level, enrolled_at, device_metadata, status)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-           ON CONFLICT (device_id) DO UPDATE SET
-             public_key_fingerprint = EXCLUDED.public_key_fingerprint,
+        const result = await db.query(
+          `INSERT INTO devices (public_key, attestation_type, platform, manufacturer, model,
+           os_version, public_key_fingerprint)
+           VALUES ($1, $2, $3, $4, $5, $6, $7)
+           ON CONFLICT (public_key_fingerprint) DO UPDATE SET
+             public_key = EXCLUDED.public_key,
              attestation_type = EXCLUDED.attestation_type,
-             security_level = EXCLUDED.security_level,
-             enrolled_at = EXCLUDED.enrolled_at,
-             device_metadata = EXCLUDED.device_metadata,
-             status = EXCLUDED.status,
-             updated_at = NOW()`,
+             platform = EXCLUDED.platform,
+             manufacturer = EXCLUDED.manufacturer,
+             model = EXCLUDED.model,
+             os_version = EXCLUDED.os_version
+           RETURNING id, enrolled_at`,
           [
-            deviceId,
-            'web',
-            publicKeyFingerprint,
+            csrPem,
             'software_key',
-            'software',
-            enrolledAt,
-            JSON.stringify({
-              platform: 'web',
-              manufacturer: deviceMetadata?.manufacturer,
-              model: deviceMetadata?.model,
-              osVersion: deviceMetadata?.osVersion,
-              algorithm: algorithm || 'ES256',
-              curve: curve || 'P-256',
-            }),
-            'active',
+            'web',
+            deviceMetadata?.manufacturer || 'Unknown',
+            deviceMetadata?.model || 'Desktop',
+            deviceMetadata?.osVersion || process.platform,
+            publicKeyFingerprint,
           ]
         );
 
-        // Store the public key (CSR) as a certificate
-        await db.query(
-          `INSERT INTO device_certs (device_id, cert_index, cert_pem, cert_fingerprint,
-           issuer, subject, not_before, not_after)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-           ON CONFLICT (device_id, cert_index) DO UPDATE SET
-             cert_pem = EXCLUDED.cert_pem,
-             cert_fingerprint = EXCLUDED.cert_fingerprint`,
-          [
-            deviceId,
-            0,
-            csrPem,
-            publicKeyFingerprint,
-            'Self-signed',
-            `PoPC Desktop Signer (${deviceId})`,
-            enrolledAt,
-            null, // No expiry for software keys
-          ]
-        );
+        const actualDeviceId = result.rows[0].id;
+        const actualEnrolledAt = result.rows[0].enrolled_at.toISOString();
 
         const response: EnrollmentResponse = {
-          deviceId,
-          enrolledAt,
+          deviceId: actualDeviceId,
+          enrolledAt: actualEnrolledAt,
           expiresAt: null,
           status: 'active',
           attestationVerified: true,
