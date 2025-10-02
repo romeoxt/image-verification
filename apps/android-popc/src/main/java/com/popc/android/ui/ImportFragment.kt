@@ -14,6 +14,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
 import com.popc.android.databinding.FragmentImportBinding
+import com.popc.android.utils.MimeTypeHelper
 import com.popc.android.utils.getColorForVerdict
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -126,11 +127,15 @@ class ImportFragment : Fragment() {
 
     private fun handleImagePicked(uri: Uri) {
         try {
+            // Get MIME type from content resolver
+            val mimeType = requireContext().contentResolver.getType(uri)
+            val extension = MimeTypeHelper.getExtensionForMimeType(mimeType)
+
             // Copy to app-private file
             val inputStream = requireContext().contentResolver.openInputStream(uri)
                 ?: throw IllegalStateException("Cannot open input stream")
 
-            val fileName = "imported_${System.currentTimeMillis()}.jpg"
+            val fileName = "imported_${System.currentTimeMillis()}.$extension"
             val destFile = File(requireContext().filesDir, fileName)
 
             inputStream.use { input ->
@@ -139,7 +144,7 @@ class ImportFragment : Fragment() {
                 }
             }
 
-            Timber.d("Image copied to: ${destFile.absolutePath}")
+            Timber.d("Image copied to: ${destFile.absolutePath} (type: $mimeType)")
             viewModel.onPicked(destFile.absolutePath)
 
         } catch (e: Exception) {
