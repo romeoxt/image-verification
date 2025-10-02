@@ -12,6 +12,7 @@ import { dirname, join } from 'path';
 import { initDb, closeDb } from './lib/db.js';
 import { verifyRoutes } from './routes/verify.js';
 import { evidenceRoutes } from './routes/evidence.js';
+import { enrollRoutes } from './routes/enroll.js';
 import type { Config } from './types/index.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -94,7 +95,7 @@ async function registerRoutes() {
       version: '0.1.0',
       endpoints: {
         verify: 'POST /v1/verify',
-        enroll: 'POST /v1/enroll (stub)',
+        enroll: 'POST /v1/enroll',
         timestamp: 'POST /v1/timestamp (stub)',
         verifyUi: 'GET /v1/verify/ui (stub)',
       },
@@ -108,13 +109,10 @@ async function registerRoutes() {
   // Evidence routes
   await fastify.register(evidenceRoutes);
 
+  // Enrollment routes
+  await fastify.register(enrollRoutes);
+
   // Stub routes
-  fastify.post('/v1/enroll', async (_request, reply) => {
-    return reply.code(501).send({
-      error: 'not_implemented',
-      message: 'Enrollment endpoint not yet implemented',
-    });
-  });
 
   fastify.post('/v1/timestamp', async (_request, reply) => {
     return reply.code(501).send({
