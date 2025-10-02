@@ -436,8 +436,10 @@ export const enrollRoutes: FastifyPluginAsync = async (fastify) => {
         const actualDeviceId = result.rows[0].id;
         const actualEnrolledAt = result.rows[0].enrolled_at.toISOString();
 
-        const response: EnrollmentResponse = {
+        const response: any = {
           deviceId: actualDeviceId,
+          publicKeyFingerprint,
+          securityLevel: 'software',
           enrolledAt: actualEnrolledAt,
           expiresAt: null,
           status: 'active',
@@ -447,7 +449,6 @@ export const enrollRoutes: FastifyPluginAsync = async (fastify) => {
             hardwareBacked: false,
             securityLevel: 'software',
           },
-          publicKeyFingerprint,
           deviceMetadata: {
             platform: 'web',
             manufacturer: deviceMetadata?.manufacturer,
