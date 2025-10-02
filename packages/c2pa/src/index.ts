@@ -268,12 +268,22 @@ async function verifyRawSignature(
     const assertionsBytes = Buffer.from(JSON.stringify(assertions), 'utf-8');
     const hash = crypto.createHash('sha256').update(assertionsBytes).digest();
 
-    // Import public key
-    const publicKeyObj = crypto.createPublicKey({
-      key: Buffer.from(signature.publicKey, 'base64'),
-      format: 'der',
-      type: 'spki',
-    });
+    // Import public key - handle both PEM and DER formats
+    let publicKeyObj;
+    if (signature.publicKey.includes('-----BEGIN')) {
+      // PEM format
+      publicKeyObj = crypto.createPublicKey({
+        key: signature.publicKey,
+        format: 'pem',
+      });
+    } else {
+      // DER format (base64 encoded)
+      publicKeyObj = crypto.createPublicKey({
+        key: Buffer.from(signature.publicKey, 'base64'),
+        format: 'der',
+        type: 'spki',
+      });
+    }
 
     // Verify signature
     const signatureBytes = Buffer.from(signature.signature, 'base64');
