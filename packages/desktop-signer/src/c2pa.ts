@@ -10,6 +10,7 @@ export interface ManifestOptions {
   signature: string;
   timestamp?: string;
   metadata?: Record<string, any>;
+  assertions?: Record<string, any>;
 }
 
 /**
@@ -18,6 +19,17 @@ export interface ManifestOptions {
 export function createManifest(options: ManifestOptions): any {
   const timestamp = options.timestamp || new Date().toISOString();
   const instanceId = randomUUID();
+
+  // Use pre-built assertions if provided, otherwise build them
+  const assertions = options.assertions || {
+    'c2pa.hash.data': {
+      algorithm: 'sha256',
+      hash: options.assetHash,
+    },
+    'popc.device.id': options.deviceId,
+    'c2pa.timestamp': timestamp,
+    ...(options.metadata || {}),
+  };
 
   return {
     version: '1.0',
@@ -41,15 +53,7 @@ export function createManifest(options: ManifestOptions): any {
       publicKey: options.publicKeyPem,
       signature: options.signature,
     },
-    assertions: {
-      'c2pa.hash.data': {
-        algorithm: 'sha256',
-        hash: options.assetHash,
-      },
-      'popc.device.id': options.deviceId,
-      'c2pa.timestamp': timestamp,
-      ...(options.metadata || {}),
-    },
+    assertions,
   };
 }
 

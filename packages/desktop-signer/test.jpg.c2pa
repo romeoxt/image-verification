@@ -3,7 +3,7 @@
   "claims": [
     {
       "claimGenerator": "PoPC Desktop Signer",
-      "instanceId": "6bb44b84-46e0-4b91-9bb9-f4237c5c242a",
+      "instanceId": "6fe9560a-a1c5-4989-b471-dcb5c4a4f491",
       "assertions": [
         {
           "label": "c2pa.hash.data",
@@ -18,7 +18,7 @@
   "signature": {
     "algorithm": "ES256",
     "publicKey": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEPldSEtJuV0wXOtcHjvB7hKtNOgLa\nGJhnpKZelMbXjkRbAy9xsp+Tad8FIHcA0CGp5I6vPm0XIULQor345g+hbQ==\n-----END PUBLIC KEY-----\n",
-    "signature": "MEYCIQC/Qv/u0FoZ6BA0AFDvCS6NtXzbCuoBblMMb9vpH/U4ZQIhAIWXaHEd0q/cpFbm4prlBNz0MtEHEAT1hFJlppAHl/mP"
+    "signature": "MEQCIF6U0YdfCkjx8vW8kGhial0L1kDxM40CsQ9tNc9pFdRWAiAA5IymC121hZTMR8sa7+18VFr/l4qKd82YO8kYgKRHZg=="
   },
   "assertions": {
     "c2pa.hash.data": {
@@ -26,7 +26,7 @@
       "hash": "6b7fa434f92a8b80aab02d9bf1a12e49ffcae424e4013a1c4f68b67e3d2bbcd0"
     },
     "popc.device.id": "245d9d0b-ab55-44c7-a82e-c5682b7bd1dd",
-    "c2pa.timestamp": "2025-10-02T06:53:42.062Z",
+    "c2pa.timestamp": "2025-10-02T06:57:48.535Z",
     "platform": "web",
     "securityLevel": "software"
   }

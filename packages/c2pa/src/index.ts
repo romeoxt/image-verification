@@ -264,9 +264,8 @@ async function verifyRawSignature(
   assertions: Record<string, unknown>
 ): Promise<boolean> {
   try {
-    // Create hash of assertions for signature verification
+    // Create assertions bytes - let createVerify hash it
     const assertionsBytes = Buffer.from(JSON.stringify(assertions), 'utf-8');
-    const hash = crypto.createHash('sha256').update(assertionsBytes).digest();
 
     // Import public key - handle both PEM and DER formats
     let publicKeyObj;
@@ -285,11 +284,11 @@ async function verifyRawSignature(
       });
     }
 
-    // Verify signature
+    // Verify signature - createVerify will hash the assertionsBytes
     const signatureBytes = Buffer.from(signature.signature, 'base64');
 
     const verify = crypto.createVerify('SHA256');
-    verify.update(hash);
+    verify.update(assertionsBytes);
     verify.end();
 
     return verify.verify(publicKeyObj, signatureBytes);
