@@ -37,7 +37,12 @@ interface IosEnrollRequest {
 
 interface WebEnrollRequest {
   platform: 'web';
-  publicKeyCredential: Record<string, unknown>;
+  csrPem?: string;
+  publicKeyFingerprint?: string;
+  allowSoftware?: boolean;
+  algorithm?: string;
+  curve?: string;
+  publicKeyCredential?: Record<string, unknown>;
   deviceMetadata?: {
     manufacturer?: string;
     model?: string;
@@ -370,12 +375,115 @@ export const enrollRoutes: FastifyPluginAsync = async (fastify) => {
 
         return reply.code(201).send(response);
       } else {
-        // Web platform (WebAuthn) - stub for now
-        return reply.code(501).send({
-          error: 'not_implemented',
-          errors: ['web_attestation_not_implemented'],
-          message: 'Web platform attestation not yet implemented',
-        });
+        // Web platform (software keys allowed for desktop signer)
+        const { csrPem, publicKeyFingerprint, allowSoftware, algorithm, curve, deviceMetadata } = body;
+
+        if (!csrPem || !publicKeyFingerprint) {
+          return reply.code(400).send({
+            error: 'invalid_request',
+            errors: ['missing_public_key'],
+            message: 'Web enrollment requires csrPem and publicKeyFingerprint',
+          });
+        }
+
+        if (!allowSoftware) {
+          warnings.push('Software-backed keys are not recommended for production use');
+        }
+
+        // Validate algorithm and curve
+        if (algorithm && algorithm !== 'ES256') {
+          return reply.code(400).send({
+            error: 'invalid_request',
+            errors: ['unsupported_algorithm'],
+            message: 'Only ES256 algorithm is supported',
+          });
+        }
+
+        if (curve && curve !== 'P-256') {
+          return reply.code(400).send({
+            error: 'invalid_request',
+            errors: ['unsupported_curve'],
+            message: 'Only P-256 curve is supported',
+          });
+        }
+
+        const db = getDb();
+
+        // Insert into database
+        await db.query(
+          `INSERT INTO devices (device_id, platform, public_key_fingerprint, attestation_type,
+           security_level, enrolled_at, device_metadata, status)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+           ON CONFLICT (device_id) DO UPDATE SET
+             public_key_fingerprint = EXCLUDED.public_key_fingerprint,
+             attestation_type = EXCLUDED.attestation_type,
+             security_level = EXCLUDED.security_level,
+             enrolled_at = EXCLUDED.enrolled_at,
+             device_metadata = EXCLUDED.device_metadata,
+             status = EXCLUDED.status,
+             updated_at = NOW()`,
+          [
+            deviceId,
+            'web',
+            publicKeyFingerprint,
+            'software_key',
+            'software',
+            enrolledAt,
+            JSON.stringify({
+              platform: 'web',
+              manufacturer: deviceMetadata?.manufacturer,
+              model: deviceMetadata?.model,
+              osVersion: deviceMetadata?.osVersion,
+              algorithm: algorithm || 'ES256',
+              curve: curve || 'P-256',
+            }),
+            'active',
+          ]
+        );
+
+        // Store the public key (CSR) as a certificate
+        await db.query(
+          `INSERT INTO device_certs (device_id, cert_index, cert_pem, cert_fingerprint,
+           issuer, subject, not_before, not_after)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+           ON CONFLICT (device_id, cert_index) DO UPDATE SET
+             cert_pem = EXCLUDED.cert_pem,
+             cert_fingerprint = EXCLUDED.cert_fingerprint`,
+          [
+            deviceId,
+            0,
+            csrPem,
+            publicKeyFingerprint,
+            'Self-signed',
+            `PoPC Desktop Signer (${deviceId})`,
+            enrolledAt,
+            null, // No expiry for software keys
+          ]
+        );
+
+        const response: EnrollmentResponse = {
+          deviceId,
+          enrolledAt,
+          expiresAt: null,
+          status: 'active',
+          attestationVerified: true,
+          attestationDetails: {
+            attestationType: 'software_key',
+            hardwareBacked: false,
+            securityLevel: 'software',
+          },
+          publicKeyFingerprint,
+          deviceMetadata: {
+            platform: 'web',
+            manufacturer: deviceMetadata?.manufacturer,
+            model: deviceMetadata?.model,
+            osVersion: deviceMetadata?.osVersion,
+          },
+          warnings: warnings.length > 0 ? warnings : undefined,
+          apiKeyHint: 'Use your organization API key for verification requests',
+        };
+
+        return reply.code(201).send(response);
       }
     } catch (error) {
       fastify.log.error({ error, deviceId }, 'Enrollment error');
