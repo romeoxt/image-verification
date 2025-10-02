@@ -18,7 +18,8 @@ class ManifestBuilder {
         deviceId: String,
         publicKey: PublicKey,
         signature: ByteArray,
-        metadata: Map<String, Any> = emptyMap()
+        metadata: Map<String, Any> = emptyMap(),
+        customAssertions: Map<String, Any> = emptyMap()
     ): String {
         val timestamp = Instant.now().toString()
         val instanceId = UUID.randomUUID().toString()
@@ -58,6 +59,17 @@ class ManifestBuilder {
                 })
                 put("popc.device.id", deviceId)
                 put("c2pa.timestamp", timestamp)
+
+                // Add custom assertions first (allows overriding defaults if needed)
+                customAssertions.forEach { (key, value) ->
+                    when (value) {
+                        is String -> put(key, value)
+                        is Int -> put(key, value)
+                        is Boolean -> put(key, value)
+                        is Map<*, *> -> put(key, JSONObject(value as Map<String, Any>))
+                        else -> put(key, value.toString())
+                    }
+                }
 
                 // Add metadata
                 metadata.forEach { (key, value) ->

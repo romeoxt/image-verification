@@ -35,6 +35,14 @@ class ViewModelFactory(
                     apiClient = ServiceLocator.provideApiClient()
                 ) as T
             }
+            modelClass.isAssignableFrom(ImportViewModel::class.java) -> {
+                ImportViewModel(
+                    keystoreManager = ServiceLocator.provideKeystoreManager(),
+                    manifestBuilder = ServiceLocator.provideManifestBuilder(),
+                    apiClient = ServiceLocator.provideApiClient(),
+                    enrollmentStore = ServiceLocator.provideEnrollmentStore(context)
+                ) as T
+            }
             else -> throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
         }
     }

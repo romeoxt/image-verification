@@ -112,6 +112,35 @@ class PopcApiClient(
     }
 
     /**
+     * Verify image only (heuristic mode, no manifest)
+     */
+    fun verifyHeuristic(imageFile: File): VerificationResponse {
+        val requestBody = MultipartBody.Builder()
+            .setType(MultipartBody.FORM)
+            .addFormDataPart(
+                "asset",
+                imageFile.name,
+                imageFile.asRequestBody("image/jpeg".toMediaType())
+            )
+            .build()
+
+        val request = Request.Builder()
+            .url("$baseUrl/v1/verify")
+            .post(requestBody)
+            .build()
+
+        client.newCall(request).execute().use { response ->
+            val body = response.body?.string() ?: throw IOException("Empty response")
+
+            if (!response.isSuccessful) {
+                throw IOException("Verification failed: HTTP ${response.code}")
+            }
+
+            return parseVerificationResponse(JSONObject(body))
+        }
+    }
+
+    /**
      * Get evidence package
      */
     fun getEvidence(verificationId: String): JSONObject {
