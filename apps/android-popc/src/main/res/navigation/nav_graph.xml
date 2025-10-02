@@ -28,7 +28,9 @@
         android:label="Evidence Package">
         <argument
             android:name="verificationId"
-            app:argType="string" />
+            app:argType="string"
+            app:nullable="true"
+            android:defaultValue="@null" />
     </fragment>
 
 </navigation>
