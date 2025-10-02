@@ -19,8 +19,9 @@ import {
 } from './config';
 import {
   generateKeyPair,
+  computeHash,
   computeFileHash,
-  signDigest,
+  signData,
   createPublicKeyRequest,
 } from './crypto';
 import { createManifest, serializeManifest } from './c2pa';
@@ -134,8 +135,23 @@ program
       const assetHash = computeFileHash(imageBuffer);
       console.log(chalk.gray(`   Hash: ${assetHash}`));
 
-      console.log(chalk.gray('Signing digest...'));
-      const signature = signDigest(assetHash, privateKey);
+      console.log(chalk.gray('Creating assertions for signature...'));
+      // Create assertions object that will be signed
+      const assertions = {
+        'c2pa.hash.data': {
+          algorithm: 'sha256',
+          hash: assetHash,
+        },
+        'popc.device.id': config.deviceId,
+        'c2pa.timestamp': new Date().toISOString(),
+        platform: config.platform,
+        securityLevel: config.securityLevel,
+      };
+
+      console.log(chalk.gray('Signing assertions...'));
+      // Sign the JSON serialization of assertions (matching C2PA verifier)
+      const assertionsJson = JSON.stringify(assertions);
+      const signature = signData(assertionsJson, privateKey);
 
       console.log(chalk.gray('Creating C2PA manifest...'));
       const manifest = createManifest({
@@ -143,10 +159,7 @@ program
         deviceId: config.deviceId,
         publicKeyPem: publicKey,
         signature,
-        metadata: {
-          platform: config.platform,
-          securityLevel: config.securityLevel,
-        },
+        assertions, // Pass the same assertions object that was signed
       });
 
       const sidecarPath = options.output || `${imagePath}.c2pa`;

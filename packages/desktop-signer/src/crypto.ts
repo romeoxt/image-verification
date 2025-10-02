@@ -51,16 +51,26 @@ export function computeFileHash(buffer: Buffer): string {
 }
 
 /**
- * Sign a digest with private key (ES256)
+ * Sign data with private key (ES256)
+ * @param data - The data to sign (will be hashed with SHA-256)
+ * @param privateKeyPem - Private key in PEM format
  */
-export function signDigest(digest: string, privateKeyPem: string): string {
-  // Create signature
-  const signature = sign('sha256', Buffer.from(digest, 'hex'), {
+export function signData(data: string | Buffer, privateKeyPem: string): string {
+  const dataBuffer = typeof data === 'string' ? Buffer.from(data, 'utf-8') : data;
+  const signature = sign('sha256', dataBuffer, {
     key: privateKeyPem,
     format: 'pem',
   });
-
   return signature.toString('base64');
+}
+
+/**
+ * Sign a digest with private key (ES256)
+ * @deprecated Use signData instead
+ */
+export function signDigest(digest: string, privateKeyPem: string): string {
+  // For backward compatibility - assumes digest is hex
+  return signData(Buffer.from(digest, 'hex'), privateKeyPem);
 }
 
 /**
