@@ -11,6 +11,9 @@
         <action
             android:id="@+id/action_enroll_to_capture"
             app:destination="@id/captureFragment" />
+        <action
+            android:id="@+id/action_enroll_to_import"
+            app:destination="@id/importFragment" />
     </fragment>
 
     <fragment
@@ -19,6 +22,15 @@
         android:label="Capture &amp; Verify">
         <action
             android:id="@+id/action_capture_to_evidence"
+            app:destination="@id/evidenceFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/importFragment"
+        android:name="com.popc.android.ui.ImportFragment"
+        android:label="Import &amp; Verify">
+        <action
+            android:id="@+id/action_import_to_evidence"
             app:destination="@id/evidenceFragment" />
     </fragment>
 
