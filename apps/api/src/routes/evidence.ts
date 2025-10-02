@@ -12,7 +12,7 @@ interface VerificationRow {
   id: string;
   asset_sha256: string;
   verdict: 'verified' | 'tampered' | 'unsigned' | 'invalid' | 'revoked';
-  reasons_json: string;
+  reasons_json: any; // JSONB from PostgreSQL (could be string or array)
   device_id: string | null;
   policy_id: string | null;
   asset_size_bytes: number;
@@ -106,8 +106,10 @@ export async function evidenceRoutes(fastify: FastifyInstance) {
         });
       }
 
-      // Parse reasons JSON
-      const reasons = JSON.parse(verification.reasons_json) as string[];
+      // Parse reasons JSON - handle both string and array from PostgreSQL
+      const reasons = typeof verification.reasons_json === 'string'
+        ? JSON.parse(verification.reasons_json)
+        : verification.reasons_json;
 
       // Step 2: Load device (if present)
       let device: DeviceRow | null = null;
