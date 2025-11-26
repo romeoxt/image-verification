@@ -58,15 +58,25 @@ export async function verifyRoutes(fastify: FastifyInstance) {
       // Step 2: Check if manifest is present - if not, run heuristic mode
       if (!manifestBytes || manifestBytes.length === 0) {
         // Heuristic mode: no cryptographic manifest
-        const { signals, confidence_score } = await analyzeAsset(assetBytes);
+        const isVideo = assetBytes.length > 12 && (
+          // ftyp prefix for mp4
+          (assetBytes[4] === 0x66 && assetBytes[5] === 0x74 && assetBytes[6] === 0x79 && assetBytes[7] === 0x70) ||
+          // mdat box (sometimes appears early)
+          (assetBytes[4] === 0x6D && assetBytes[5] === 0x64 && assetBytes[6] === 0x61 && assetBytes[7] === 0x74)
+        );
+
+        const { signals, confidence_score } = isVideo 
+          ? { signals: {}, confidence_score: 50 } // Basic fallback for video
+          : await analyzeAsset(assetBytes);
 
         const verificationId = await recordVerification({
           assetSha256,
           verdict: 'unsigned',
-          reasons: ['No C2PA manifest found', 'Running heuristic analysis'],
+          reasons: ['No C2PA manifest found', isVideo ? 'Video file (heuristic skipped)' : 'Running heuristic analysis'],
           deviceId: null,
           policyId: null,
           assetSizeBytes: assetBytes.length,
+          assetMimeType: isVideo ? 'video/mp4' : 'image/jpeg',
         });
 
         return reply.code(200).send({
@@ -75,7 +85,7 @@ export async function verifyRoutes(fastify: FastifyInstance) {
           verdict: 'unsigned',
           confidence_score,
           assetSha256,
-          reasons: ['No C2PA manifest found', 'Running heuristic analysis'],
+          reasons: ['No C2PA manifest found', isVideo ? 'Video file (heuristic skipped)' : 'Running heuristic analysis'],
           metadata: null,
           evidencePackageUrl: null,
           verifiedAt: new Date().toISOString(),
@@ -89,7 +99,7 @@ export async function verifyRoutes(fastify: FastifyInstance) {
       // Check if manifest is valid
       if (!manifest.valid) {
         const errorReasons = manifest.errors || ['invalid_manifest_format'];
-        const verdict = errorReasons.some(e => e.includes('manifest_binding_missing'))
+        const verdict = errorReasons.some((e: string) => e.includes('manifest_binding_missing'))
           ? 'unsigned'
           : 'invalid';
 
@@ -163,7 +173,43 @@ export async function verifyRoutes(fastify: FastifyInstance) {
         } satisfies VerifyResponse);
       }
 
-      // Step 4: Attestation check (stub for now)
+      // Step 4: Check device revocation status
+      // We check if the device ID in the manifest is active (not revoked)
+      let isDeviceRevoked = false;
+      if (manifest.deviceId) {
+        const device = await queryOne<{ revoked_at: Date | null }>(
+          'SELECT revoked_at FROM devices WHERE id = $1',
+          [manifest.deviceId]
+        );
+
+        if (device && device.revoked_at) {
+          isDeviceRevoked = true;
+        }
+      }
+
+      if (isDeviceRevoked) {
+        const verificationId = await recordVerification({
+          assetSha256,
+          verdict: 'revoked',
+          reasons: ['Device certificate revoked'],
+          deviceId: manifest.deviceId || null,
+          policyId: null,
+          assetSizeBytes: assetBytes.length,
+        });
+
+        return reply.code(200).send({
+          verificationId,
+          mode: 'certified',
+          verdict: 'revoked',
+          assetSha256,
+          reasons: ['Device certificate revoked'],
+          metadata: null,
+          evidencePackageUrl: null,
+          verifiedAt: new Date().toISOString(),
+        } satisfies VerifyResponse);
+      }
+
+      // Step 5: Attestation check (stub for now)
       // In production, verify device certificate chain and attestation
       const attestationValid = true;
 
@@ -352,6 +398,7 @@ async function recordVerification(data: {
   deviceId: string | null;
   policyId: string | null;
   assetSizeBytes: number;
+  assetMimeType?: string;
   capturedAt?: Date | null;
   signatureAlgorithm?: string;
 }): Promise<string> {
@@ -366,9 +413,10 @@ async function recordVerification(data: {
       device_id,
       policy_id,
       asset_size_bytes,
+      asset_mime_type,
       captured_at,
       signature_algorithm
-    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
     [
       verificationId,
       data.assetSha256,
@@ -377,6 +425,7 @@ async function recordVerification(data: {
       data.deviceId,
       data.policyId,
       data.assetSizeBytes,
+      data.assetMimeType || 'image/jpeg',
       data.capturedAt || null,
       data.signatureAlgorithm || null,
     ]
