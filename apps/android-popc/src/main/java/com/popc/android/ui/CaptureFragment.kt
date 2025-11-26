@@ -9,7 +9,15 @@ import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.video.FileOutputOptions
+import androidx.camera.video.Quality
+import androidx.camera.video.QualitySelector
+import androidx.camera.video.Recorder
+import androidx.camera.video.Recording
+import androidx.camera.video.VideoCapture
+import androidx.camera.video.VideoRecordEvent
 import androidx.core.content.ContextCompat
+import androidx.core.content.PermissionChecker
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -35,15 +43,26 @@ class CaptureFragment : Fragment() {
     }
 
     private var imageCapture: ImageCapture? = null
+    private var videoCapture: VideoCapture<Recorder>? = null
+    private var recording: Recording? = null
     private lateinit var cameraExecutor: ExecutorService
 
+    private var isVideoMode = false
+
     private val cameraPermissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        if (isGranted) {
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val cameraGranted = permissions[Manifest.permission.CAMERA] ?: false
+        val audioGranted = permissions[Manifest.permission.RECORD_AUDIO] ?: false
+        
+        if (cameraGranted) {
             startCamera()
         } else {
             showToast("Camera permission is required")
+        }
+        
+        if (!audioGranted && isVideoMode) {
+             showToast("Audio permission is recommended for video")
         }
     }
 
@@ -78,7 +97,31 @@ class CaptureFragment : Fragment() {
 
     private fun setupClickListeners() {
         binding.btnCapture.setOnClickListener {
-            capturePhoto()
+            if (isVideoMode) {
+                captureVideo()
+            } else {
+                capturePhoto()
+            }
+        }
+
+        binding.toggleMode.addOnButtonCheckedListener { _, checkedId, isChecked ->
+            if (isChecked) {
+                when (checkedId) {
+                    R.id.btn_mode_photo -> {
+                        isVideoMode = false
+                        binding.btnCapture.text = getString(R.string.btn_capture)
+                        binding.btnCapture.setIconResource(android.R.drawable.ic_menu_camera)
+                        startCamera() // Rebind for photo
+                    }
+                    R.id.btn_mode_video -> {
+                        isVideoMode = true
+                        binding.btnCapture.text = getString(R.string.btn_record)
+                        binding.btnCapture.setIconResource(android.R.drawable.ic_media_play)
+                        checkAudioPermission()
+                        startCamera() // Rebind for video
+                    }
+                }
+            }
         }
 
         binding.btnSignVerify.setOnClickListener {
@@ -95,16 +138,27 @@ class CaptureFragment : Fragment() {
     }
 
     private fun checkCameraPermission() {
-        when {
-            ContextCompat.checkSelfPermission(
+        val permissions = mutableListOf(Manifest.permission.CAMERA)
+        // Request audio permission upfront if we might need it, or just wait until mode switch
+        
+        if (ContextCompat.checkSelfPermission(
                 requireContext(),
                 Manifest.permission.CAMERA
-            ) == PackageManager.PERMISSION_GRANTED -> {
-                startCamera()
-            }
-            else -> {
-                cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
-            }
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            startCamera()
+        } else {
+            cameraPermissionLauncher.launch(permissions.toTypedArray())
+        }
+    }
+
+    private fun checkAudioPermission() {
+        if (ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.RECORD_AUDIO
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            cameraPermissionLauncher.launch(arrayOf(Manifest.permission.RECORD_AUDIO))
         }
     }
 
@@ -120,20 +174,36 @@ class CaptureFragment : Fragment() {
                     it.setSurfaceProvider(binding.previewView.surfaceProvider)
                 }
 
-            imageCapture = ImageCapture.Builder()
-                .setCaptureMode(ImageCapture.CAPTURE_MODE_MAXIMIZE_QUALITY)
-                .build()
-
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
 
             try {
                 cameraProvider.unbindAll()
-                cameraProvider.bindToLifecycle(
-                    viewLifecycleOwner,
-                    cameraSelector,
-                    preview,
-                    imageCapture
-                )
+
+                if (isVideoMode) {
+                    val recorder = Recorder.Builder()
+                        .setQualitySelector(QualitySelector.from(Quality.HIGHEST))
+                        .build()
+                    videoCapture = VideoCapture.withOutput(recorder)
+
+                    cameraProvider.bindToLifecycle(
+                        viewLifecycleOwner,
+                        cameraSelector,
+                        preview,
+                        videoCapture
+                    )
+                } else {
+                    imageCapture = ImageCapture.Builder()
+                        .setCaptureMode(ImageCapture.CAPTURE_MODE_MAXIMIZE_QUALITY)
+                        .build()
+
+                    cameraProvider.bindToLifecycle(
+                        viewLifecycleOwner,
+                        cameraSelector,
+                        preview,
+                        imageCapture
+                    )
+                }
+
             } catch (e: Exception) {
                 Timber.e(e, "Camera binding failed")
                 showToast("Failed to start camera")
@@ -172,6 +242,65 @@ class CaptureFragment : Fragment() {
                 }
             }
         )
+    }
+
+    private fun captureVideo() {
+        val videoCapture = this.videoCapture ?: return
+
+        // If currently recording, stop it
+        val curRecording = recording
+        if (curRecording != null) {
+            curRecording.stop()
+            recording = null
+            return
+        }
+
+        // Start new recording
+        val videoFile = File(
+            requireContext().getExternalFilesDir(null),
+            "VID_${System.currentTimeMillis()}.mp4"
+        )
+
+        val outputOptions = FileOutputOptions.Builder(videoFile).build()
+
+        // Check audio permission
+        val hasAudioPermission = PermissionChecker.checkSelfPermission(
+            requireContext(), Manifest.permission.RECORD_AUDIO
+        ) == PermissionChecker.PERMISSION_GRANTED
+
+        var pendingRecording = videoCapture.output
+            .prepareRecording(requireContext(), outputOptions)
+
+        if (hasAudioPermission) {
+            pendingRecording = pendingRecording.withAudioEnabled()
+        }
+
+        recording = pendingRecording.start(ContextCompat.getMainExecutor(requireContext())) { recordEvent ->
+            when(recordEvent) {
+                is VideoRecordEvent.Start -> {
+                    binding.btnCapture.text = getString(R.string.btn_stop_recording)
+                    binding.btnCapture.setIconResource(android.R.drawable.ic_media_pause)
+                    binding.toggleMode.isEnabled = false
+                }
+                is VideoRecordEvent.Finalize -> {
+                    if (!recordEvent.hasError()) {
+                        val msg = "Video capture succeeded: ${videoFile.absolutePath}"
+                        Timber.d(msg)
+                        viewModel.onCaptured(videoFile.absolutePath)
+                        showToast("Video captured")
+                    } else {
+                        recording?.close()
+                        recording = null
+                        Timber.e("Video capture ends with error: ${recordEvent.error}")
+                        showToast("Video capture failed")
+                    }
+                    binding.btnCapture.text = getString(R.string.btn_record)
+                    binding.btnCapture.setIconResource(android.R.drawable.ic_media_play)
+                    binding.toggleMode.isEnabled = true
+                    recording = null
+                }
+            }
+        }
     }
 
     private fun updateUI(state: CaptureUiState) {

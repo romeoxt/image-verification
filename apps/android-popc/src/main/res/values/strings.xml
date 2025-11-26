@@ -11,6 +11,10 @@
 
     <!-- Capture -->
     <string name="btn_capture">Capture</string>
+    <string name="btn_record">Record Video</string>
+    <string name="btn_stop_recording">Stop Recording</string>
+    <string name="mode_photo">Photo</string>
+    <string name="mode_video">Video</string>
     <string name="btn_sign_verify">Sign &amp; Verify</string>
     <string name="enroll_first">Please enroll device first</string>
     <string name="camera_permission_required">Camera permission is required</string>
