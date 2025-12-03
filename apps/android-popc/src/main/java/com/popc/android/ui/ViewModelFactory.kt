@@ -17,14 +17,14 @@ class ViewModelFactory(
         return when {
             modelClass.isAssignableFrom(EnrollViewModel::class.java) -> {
                 EnrollViewModel(
-                    keystoreManager = ServiceLocator.provideKeystoreManager(),
+                    keystoreManager = ServiceLocator.provideKeystoreManager(context),
                     apiClient = ServiceLocator.provideApiClient(),
                     enrollmentStore = ServiceLocator.provideEnrollmentStore(context)
                 ) as T
             }
             modelClass.isAssignableFrom(CaptureViewModel::class.java) -> {
                 CaptureViewModel(
-                    keystoreManager = ServiceLocator.provideKeystoreManager(),
+                    keystoreManager = ServiceLocator.provideKeystoreManager(context),
                     manifestBuilder = ServiceLocator.provideManifestBuilder(),
                     apiClient = ServiceLocator.provideApiClient(),
                     enrollmentStore = ServiceLocator.provideEnrollmentStore(context)
@@ -37,7 +37,7 @@ class ViewModelFactory(
             }
             modelClass.isAssignableFrom(ImportViewModel::class.java) -> {
                 ImportViewModel(
-                    keystoreManager = ServiceLocator.provideKeystoreManager(),
+                    keystoreManager = ServiceLocator.provideKeystoreManager(context),
                     manifestBuilder = ServiceLocator.provideManifestBuilder(),
                     apiClient = ServiceLocator.provideApiClient(),
                     enrollmentStore = ServiceLocator.provideEnrollmentStore(context)
