@@ -15,10 +15,15 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- Each device must have a unique public key and can be revoked if compromised.
 
 CREATE TABLE devices (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id TEXT PRIMARY KEY, -- Changed from UUID to match code expecting device_id
     public_key TEXT NOT NULL UNIQUE,
     attestation_type TEXT NOT NULL,
+    security_level TEXT,
+    cert_expiry TIMESTAMPTZ,
+    device_metadata JSONB,
+    status TEXT DEFAULT 'active',
     enrolled_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now(),
     revoked_at TIMESTAMPTZ,
 
     -- Device metadata (optional)
@@ -37,6 +42,7 @@ CREATE TABLE devices (
             'apple_devicecheck',
             'apple_app_attest',
             'webauthn',
+            'software_key',
             'tpm'
         )),
     CONSTRAINT devices_platform_check
@@ -51,6 +57,7 @@ CREATE INDEX devices_enrolled_at_idx ON devices(enrolled_at DESC);
 CREATE INDEX devices_revoked_at_idx ON devices(revoked_at) WHERE revoked_at IS NOT NULL;
 
 COMMENT ON TABLE devices IS 'Enrolled devices with hardware attestation';
+COMMENT ON COLUMN devices.id IS 'Device ID (e.g. dev_android_...)';
 COMMENT ON COLUMN devices.public_key IS 'Base64-encoded DER SubjectPublicKeyInfo';
 COMMENT ON COLUMN devices.public_key_fingerprint IS 'SHA-256 fingerprint of public key (hex)';
 COMMENT ON COLUMN devices.revoked_at IS 'Timestamp when device was revoked (NULL = active)';
@@ -63,7 +70,7 @@ COMMENT ON COLUMN devices.revoked_at IS 'Timestamp when device was revoked (NULL
 
 CREATE TABLE device_certs (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    device_id UUID NOT NULL REFERENCES devices(id) ON DELETE CASCADE,
+    device_id TEXT NOT NULL REFERENCES devices(id) ON DELETE CASCADE,
     cert_pem TEXT NOT NULL,
     issuer TEXT NOT NULL,
     subject TEXT,
@@ -79,7 +86,8 @@ CREATE TABLE device_certs (
     CONSTRAINT device_certs_status_check
         CHECK (status IN ('valid', 'expired', 'revoked', 'invalid')),
     CONSTRAINT device_certs_validity_check
-        CHECK (not_after > not_before)
+        CHECK (not_after > not_before),
+    CONSTRAINT device_certs_unique_position UNIQUE (device_id, chain_position)
 );
 
 -- Indexes for device_certs table
@@ -146,7 +154,7 @@ CREATE TABLE verifications (
     asset_sha256 TEXT NOT NULL,
     verdict TEXT NOT NULL,
     reasons_json JSONB NOT NULL,
-    device_id UUID REFERENCES devices(id),
+    device_id TEXT REFERENCES devices(id),
     policy_id UUID REFERENCES policies(id),
 
     -- Additional verification metadata
@@ -249,7 +257,7 @@ COMMENT ON COLUMN transparency_log.leaf_index IS 'Index of this entry in the Mer
 
 CREATE TABLE revocations (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    device_id UUID NOT NULL REFERENCES devices(id) ON DELETE CASCADE,
+    device_id TEXT NOT NULL REFERENCES devices(id) ON DELETE CASCADE,
     reason TEXT NOT NULL,
     revoked_by TEXT,
     metadata JSONB,

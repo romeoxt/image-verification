@@ -17,8 +17,8 @@ import java.util.concurrent.TimeUnit
 /**
  * API client for PoPC verification service
  */
-class PopcApiClient(
-    baseUrl: String = BuildConfig.BASE_URL
+class PopcApiClientV2(
+    baseUrl: String = BuildConfig.BASE_URL // Use production Railway URL from build config
 ) {
     private val client: OkHttpClient = OkHttpClient.Builder()
         .connectTimeout(30, TimeUnit.SECONDS)
