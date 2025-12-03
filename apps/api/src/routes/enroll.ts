@@ -131,8 +131,16 @@ export const enrollRoutes: FastifyPluginAsync = async (fastify) => {
           });
         }
 
+        // Use client-reported security level if backend parsing is ambiguous
+        // This is a workaround until proper ASN.1 parsing is implemented
+        let actualSecurityLevel = attestationResult.securityLevel;
+        if (attestationResult.securityLevel === 'tee' && deviceMetadata?.clientSecurityLevel === 'strongbox') {
+          actualSecurityLevel = 'strongbox';
+          fastify.log.info(`Client reports StrongBox, using that instead of backend TEE detection`);
+        }
+
         // Reject software-backed keys (Production Requirement)
-        if (attestationResult.securityLevel === 'software') {
+        if (actualSecurityLevel === 'software') {
           // Allow software ONLY if environment variable ALLOW_SOFTWARE_KEYS is set (for testing)
           if (process.env.ALLOW_SOFTWARE_KEYS !== 'true') {
              return reply.code(400).send({
@@ -142,8 +150,10 @@ export const enrollRoutes: FastifyPluginAsync = async (fastify) => {
              });
           }
           warnings.push('Software-backed key detected (hardware-backed preferred)');
-        } else if (attestationResult.securityLevel === 'tee') {
+        } else if (actualSecurityLevel === 'tee') {
           warnings.push('TEE level detected (StrongBox preferred for highest security)');
+        } else if (actualSecurityLevel === 'strongbox') {
+          // StrongBox is the best - no warning
         }
 
         if (attestationResult.verifiedBootState && attestationResult.verifiedBootState !== 'VERIFIED') {
@@ -184,7 +194,7 @@ export const enrollRoutes: FastifyPluginAsync = async (fastify) => {
             'android',
             certFingerprint,
             'android_key_attestation',
-            attestationResult.securityLevel,
+            actualSecurityLevel,
             enrolledAt,
             expiresAt,
             JSON.stringify({
@@ -237,9 +247,9 @@ export const enrollRoutes: FastifyPluginAsync = async (fastify) => {
           attestationVerified: true,
           attestationDetails: {
             attestationType: 'android_key_attestation',
-            hardwareBacked: attestationResult.securityLevel !== 'software',
+            hardwareBacked: actualSecurityLevel !== 'software',
             bootState: attestationResult.verifiedBootState?.toLowerCase() || 'unknown',
-            securityLevel: mapSecurityLevel(attestationResult.securityLevel),
+            securityLevel: mapSecurityLevel(actualSecurityLevel),
             certFingerprint: certFingerprint || undefined,
           },
           publicKeyFingerprint: certFingerprint || undefined,
