@@ -15,8 +15,8 @@ object ServiceLocator {
     private var apiClient: PopcApiClientV2? = null
     private var enrollmentStore: EnrollmentStore? = null
 
-    fun provideKeystoreManager(): KeystoreManager {
-        return keystoreManager ?: KeystoreManager().also { keystoreManager = it }
+    fun provideKeystoreManager(context: Context? = null): KeystoreManager {
+        return keystoreManager ?: KeystoreManager(context?.applicationContext).also { keystoreManager = it }
     }
 
     fun provideManifestBuilder(): ManifestBuilder {
