@@ -20,6 +20,7 @@ interface AndroidEnrollRequest {
     manufacturer?: string;
     model?: string;
     osVersion?: string;
+    clientSecurityLevel?: string;
   };
 }
 
