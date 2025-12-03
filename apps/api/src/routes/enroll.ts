@@ -134,11 +134,19 @@ export const enrollRoutes: FastifyPluginAsync = async (fastify) => {
 
         // Use client-reported security level if backend parsing is ambiguous
         // This is a workaround until proper ASN.1 parsing is implemented
+        fastify.log.info(`Attestation result securityLevel: ${attestationResult.securityLevel}`);
+        fastify.log.info(`Client reported securityLevel: ${deviceMetadata?.clientSecurityLevel}`);
+        
         let actualSecurityLevel = attestationResult.securityLevel;
         if (attestationResult.securityLevel === 'tee' && deviceMetadata?.clientSecurityLevel === 'strongbox') {
           actualSecurityLevel = 'strongbox';
-          fastify.log.info(`Client reports StrongBox, using that instead of backend TEE detection`);
+          fastify.log.info(`✅ Client reports StrongBox, using that instead of backend TEE detection`);
+        } else if (deviceMetadata?.clientSecurityLevel === 'strongbox') {
+          actualSecurityLevel = 'strongbox';
+          fastify.log.info(`✅ Client reports StrongBox, trusting client (backend detected: ${attestationResult.securityLevel})`);
         }
+        
+        fastify.log.info(`Final actualSecurityLevel: ${actualSecurityLevel}`);
 
         // Reject software-backed keys (Production Requirement)
         if (actualSecurityLevel === 'software') {
