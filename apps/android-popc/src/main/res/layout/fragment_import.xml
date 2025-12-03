@@ -164,6 +164,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:textAppearance="?attr/textAppearanceBodyMedium"
+                        android:textColor="@color/black"
                         tools:text="Mode: CERTIFIED" />
 
                     <TextView
@@ -181,6 +182,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
                         android:textAppearance="?attr/textAppearanceBodyMedium"
+                        android:textColor="@color/black"
                         tools:text="Confidence: 95%" />
 
                     <TextView
@@ -189,6 +191,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:textAppearance="?attr/textAppearanceBodySmall"
+                        android:textColor="@color/black"
                         android:fontFamily="monospace"
                         tools:text="Reasons:\n• Content binding valid\n• Signature valid" />
 

@@ -72,8 +72,9 @@
                 android:fontFamily="monospace"
                 android:padding="8dp"
                 android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+                android:textColor="@color/black"
                 android:textIsSelectable="true"
-                tools:text="{\n  \"verificationId\": \"abc123\",\n  \"mode\": \"certified\"\n}" />
+                tools:text="JSON Evidence Data Placeholder" />
 
         </HorizontalScrollView>
 

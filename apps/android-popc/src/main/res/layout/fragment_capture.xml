@@ -91,6 +91,7 @@
         android:layout_marginHorizontal="16dp"
         android:layout_marginBottom="4dp"
         android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+        android:textColor="@color/black"
         android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@id/txt_sha"
         app:layout_constraintEnd_toEndOf="parent"
@@ -106,6 +107,7 @@
         android:layout_marginBottom="8dp"
         android:fontFamily="monospace"
         android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+        android:textColor="@color/black"
         android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@id/result_card"
         app:layout_constraintEnd_toEndOf="parent"
@@ -145,6 +147,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+                android:textColor="@color/black"
                 android:visibility="gone"
                 tools:text="Confidence: 100/100"
                 tools:visibility="visible" />
@@ -155,6 +158,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+                android:textColor="@color/black"
                 android:visibility="gone"
                 tools:text="Reasons:\n• Content binding hash matches\n• Signature valid"
                 tools:visibility="visible" />
