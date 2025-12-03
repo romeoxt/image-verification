@@ -52,6 +52,9 @@ const fastify = Fastify({
         level: config.logLevel,
       },
   bodyLimit: config.maxAssetSize,
+  connectionTimeout: 120000, // 2 minutes - allow time for large uploads
+  keepAliveTimeout: 120000, // 2 minutes
+  requestTimeout: 120000, // 2 minutes - Railway may still enforce 30s
 });
 
 /**
