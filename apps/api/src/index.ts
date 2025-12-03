@@ -25,7 +25,7 @@ loadEnv();
 const config: Config = {
   port: Number(process.env.PORT) || 3000,
   host: process.env.HOST || '0.0.0.0',
-  databaseUrl: process.env.DATABASE_URL || 'postgresql://popc:popc_password@localhost:5432/popc',
+  databaseUrl: process.env.DATABASE_URL || '',
   logLevel: process.env.LOG_LEVEL || 'info',
   logPretty: process.env.LOG_PRETTY === 'true',
   maxAssetSize: Number(process.env.MAX_ASSET_SIZE_BYTES) || 104857600, // 100MB
