@@ -1,9 +1,10 @@
 plugins {
-    id("com.android.application")
-    id("org.jetbrains.kotlin.android")
-    id("kotlin-parcelize")
-    id("androidx.navigation.safeargs.kotlin")
+    id("com.android.application") version "8.2.2"
+    id("org.jetbrains.kotlin.android") version "1.9.22"
+    id("androidx.navigation.safeargs.kotlin") version "2.7.6"
 }
+
+apply(plugin = "kotlin-parcelize")
 
 android {
     namespace = "com.popc.android"

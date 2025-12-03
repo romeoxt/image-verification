@@ -131,8 +131,16 @@ export const enrollRoutes: FastifyPluginAsync = async (fastify) => {
           });
         }
 
-        // Add warnings for non-optimal security configurations
+        // Reject software-backed keys (Production Requirement)
         if (attestationResult.securityLevel === 'software') {
+          // Allow software ONLY if environment variable ALLOW_SOFTWARE_KEYS is set (for testing)
+          if (process.env.ALLOW_SOFTWARE_KEYS !== 'true') {
+             return reply.code(400).send({
+               error: 'insecure_device',
+               errors: ['software_key_not_allowed'],
+               message: 'Device does not support hardware-backed security (StrongBox/TEE required)',
+             });
+          }
           warnings.push('Software-backed key detected (hardware-backed preferred)');
         } else if (attestationResult.securityLevel === 'tee') {
           warnings.push('TEE level detected (StrongBox preferred for highest security)');
@@ -158,11 +166,12 @@ export const enrollRoutes: FastifyPluginAsync = async (fastify) => {
         // Insert into database
         const db = getDb();
         await db.query(
-          `INSERT INTO devices (device_id, platform, public_key_fingerprint, attestation_type,
-           security_level, enrolled_at, cert_expiry, device_metadata, status)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-           ON CONFLICT (device_id) DO UPDATE SET
+          `INSERT INTO devices (id, platform, public_key_fingerprint, attestation_type,
+           security_level, enrolled_at, cert_expiry, device_metadata, status, public_key)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+           ON CONFLICT (id) DO UPDATE SET
              public_key_fingerprint = EXCLUDED.public_key_fingerprint,
+             public_key = EXCLUDED.public_key,
              attestation_type = EXCLUDED.attestation_type,
              security_level = EXCLUDED.security_level,
              enrolled_at = EXCLUDED.enrolled_at,
@@ -187,6 +196,7 @@ export const enrollRoutes: FastifyPluginAsync = async (fastify) => {
               verifiedBootState: attestationResult.verifiedBootState,
             }),
             'active',
+            certChainPem[0],
           ]
         );
 
@@ -195,12 +205,12 @@ export const enrollRoutes: FastifyPluginAsync = async (fastify) => {
           for (let i = 0; i < attestationResult.certificateChainInfo.length; i++) {
             const cert = attestationResult.certificateChainInfo[i];
             await db.query(
-              `INSERT INTO device_certs (device_id, cert_index, cert_pem, cert_fingerprint,
+              `INSERT INTO device_certs (device_id, chain_position, cert_pem, fingerprint,
                issuer, subject, not_before, not_after)
                VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-               ON CONFLICT (device_id, cert_index) DO UPDATE SET
+               ON CONFLICT (device_id, chain_position) DO UPDATE SET
                  cert_pem = EXCLUDED.cert_pem,
-                 cert_fingerprint = EXCLUDED.cert_fingerprint,
+                 fingerprint = EXCLUDED.fingerprint,
                  issuer = EXCLUDED.issuer,
                  subject = EXCLUDED.subject,
                  not_before = EXCLUDED.not_before,
@@ -326,12 +336,12 @@ export const enrollRoutes: FastifyPluginAsync = async (fastify) => {
           for (let i = 0; i < attestationResult.certificateChainInfo.length; i++) {
             const cert = attestationResult.certificateChainInfo[i];
             await db.query(
-              `INSERT INTO device_certs (device_id, cert_index, cert_pem, cert_fingerprint,
+              `INSERT INTO device_certs (device_id, chain_position, cert_pem, fingerprint,
                issuer, subject, not_before, not_after)
                VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-               ON CONFLICT (device_id, cert_index) DO UPDATE SET
+               ON CONFLICT (device_id, chain_position) DO UPDATE SET
                  cert_pem = EXCLUDED.cert_pem,
-                 cert_fingerprint = EXCLUDED.cert_fingerprint,
+                 fingerprint = EXCLUDED.fingerprint,
                  issuer = EXCLUDED.issuer,
                  subject = EXCLUDED.subject,
                  not_before = EXCLUDED.not_before,

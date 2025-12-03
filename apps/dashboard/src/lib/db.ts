@@ -7,13 +7,22 @@ declare global {
   var _postgresPool: Pool | undefined;
 }
 
-const connectionString = process.env.DATABASE_URL || 'postgresql://postgres:hBMywmtBuiWLziWtyoLzyhXSwxqOcype@metro.proxy.rlwy.net:17842/railway';
+const connectionString = process.env.DATABASE_URL;
 
-console.log('🔌 Database connecting to:', connectionString.replace(/:[^:@]+@/, ':***@')); // Log masked URL
+if (!connectionString) {
+  // In development, you might want a fallback, but for security, it's better to fail fast or use a dummy local one
+  // throw new Error('DATABASE_URL environment variable is not set');
+  console.warn('⚠️ DATABASE_URL is not set. Using empty connection string (DB will fail).');
+}
+
+console.log('🔌 Database connecting to:', connectionString ? connectionString.replace(/:[^:@]+@/, ':***@') : 'undefined'); // Log masked URL
 
 let pool: Pool;
 
-if (process.env.NODE_ENV === 'production') {
+if (!connectionString) {
+    // Dummy pool to prevent crash on import, but queries will fail
+    pool = new Pool({});
+} else if (process.env.NODE_ENV === 'production') {
   pool = new Pool({
     connectionString,
     max: 20,
