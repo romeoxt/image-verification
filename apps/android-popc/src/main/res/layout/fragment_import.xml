@@ -61,7 +61,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
                         android:textAppearance="?attr/textAppearanceBodySmall"
-                        android:textColor="?android:attr/textColorSecondary"
+                        android:textColor="@color/text_secondary"
                         android:visibility="gone"
                         tools:text="Path: /storage/emulated/0/DCIM/image.jpg"
                         tools:visibility="visible" />
@@ -73,7 +73,7 @@
                         android:layout_marginTop="4dp"
                         android:textAppearance="?attr/textAppearanceBodySmall"
                         android:fontFamily="monospace"
-                        android:textColor="?android:attr/textColorSecondary"
+                        android:textColor="@color/text_secondary"
                         android:visibility="gone"
                         tools:text="SHA-256: a1b2c3d4..."
                         tools:visibility="visible" />
@@ -116,7 +116,7 @@
                         android:layout_marginBottom="16dp"
                         android:text="Analyzes image metadata and signals without signature"
                         android:textAppearance="?attr/textAppearanceBodySmall"
-                        android:textColor="?android:attr/textColorSecondary" />
+                        android:textColor="@color/text_secondary" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btn_sign_verify"
@@ -164,7 +164,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:textAppearance="?attr/textAppearanceBodyMedium"
-                        android:textColor="@color/black"
+                        android:textColor="@color/text_secondary"
                         tools:text="Mode: CERTIFIED" />
 
                     <TextView
@@ -173,6 +173,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:textAppearance="?attr/textAppearanceTitleLarge"
+                        android:textStyle="bold"
                         tools:text="VERIFIED"
                         tools:textColor="@color/purple_500" />
 
@@ -182,7 +183,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
                         android:textAppearance="?attr/textAppearanceBodyMedium"
-                        android:textColor="@color/black"
+                        android:textColor="@color/text_primary"
                         tools:text="Confidence: 95%" />
 
                     <TextView
@@ -191,7 +192,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:textAppearance="?attr/textAppearanceBodySmall"
-                        android:textColor="@color/black"
+                        android:textColor="@color/text_primary"
                         android:fontFamily="monospace"
                         tools:text="Reasons:\n• Content binding valid\n• Signature valid" />
 

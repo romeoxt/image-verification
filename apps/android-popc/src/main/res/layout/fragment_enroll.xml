@@ -78,7 +78,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="✅ Enrolled"
+                    android:text="Enrolled"
                     android:textAppearance="@style/TextAppearance.Material3.TitleLarge"
                     android:textColor="@color/success" />
 
@@ -88,6 +88,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
                     android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+                    android:textColor="@color/text_primary"
                     tools:text="Device ID: dev_abc...123" />
 
                 <TextView
@@ -96,6 +97,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
                     android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+                    android:textColor="@color/text_primary"
                     tools:text="Security: STRONGBOX" />
 
                 <TextView
@@ -104,6 +106,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
                     android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+                    android:textColor="@color/text_primary"
                     tools:text="Type: android_key_attestation" />
 
                 <TextView
@@ -112,10 +115,19 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
                     android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+                    android:textColor="@color/text_primary"
                     tools:text="Boot State: verified" />
 
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
+
+        <!-- Barrier -->
+        <androidx.constraintlayout.widget.Barrier
+            android:id="@+id/cards_barrier"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:barrierDirection="bottom"
+            app:constraint_referenced_ids="not_enrolled_card,enrollment_card" />
 
         <!-- Warnings -->
         <TextView
@@ -123,15 +135,15 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:background="@color/warning_light"
+            android:background="#E1F5FE"
             android:padding="12dp"
             android:textAppearance="@style/TextAppearance.Material3.BodySmall"
-            android:textColor="@color/warning_dark"
+            android:textColor="#01579B"
             android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/enrollment_card"
-            tools:text="Warnings:\n• Software key detected"
+            app:layout_constraintTop_toBottomOf="@id/cards_barrier"
+            tools:text="System Info:\n• Software key detected"
             tools:visibility="visible" />
 
         <!-- Error -->
@@ -157,6 +169,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
+            android:elevation="10dp"
             android:text="@string/btn_enroll"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

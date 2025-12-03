@@ -41,10 +41,10 @@ class KeystoreManager(private val context: android.content.Context? = null) {
                 }
                 ?: throw SecurityException("Failed to generate hardware-backed key")
 
-            Timber.i("✅ Generated key with security level: ${result.securityLevel}")
+            Timber.i("Generated key with security level: ${result.securityLevel}")
             return result
         } catch (e: Exception) {
-            Timber.e(e, "❌ Key generation failed")
+            Timber.e(e, "Key generation failed")
             throw e
         }
     }
@@ -126,7 +126,7 @@ class KeystoreManager(private val context: android.content.Context? = null) {
                 curve = "P-256"
             )
         } catch (e: Exception) {
-            Timber.w(e, "❌ Failed to generate key with StrongBox=$useStrongBox: ${e.javaClass.simpleName}: ${e.message}")
+            Timber.w(e, "Failed to generate key with StrongBox=$useStrongBox: ${e.javaClass.simpleName}: ${e.message}")
             null
         }
     }

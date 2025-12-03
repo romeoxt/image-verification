@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Status colors for DARK theme -->
+    <color name="success">#66BB6A</color> <!-- Light green for dark backgrounds -->
+    <color name="success_light">#1B5E20</color> <!-- Dark green card bg in dark mode -->
+    <color name="error">#EF5350</color> <!-- Light red for dark backgrounds -->
+    <color name="error_light">#B71C1C</color> <!-- Dark red card bg in dark mode -->
+    <color name="warning">#FFA726</color> <!-- Light orange for dark backgrounds -->
+    <color name="warning_light">#E65100</color> <!-- Dark orange card bg in dark mode -->
+    <color name="neutral">#BDBDBD</color> <!-- Light grey for dark backgrounds -->
+    <color name="neutral_light">#424242</color> <!-- Dark grey card bg in dark mode -->
+    
+    <!-- Semantic text colors for DARK theme -->
+    <color name="text_primary">#FFFFFF</color> <!-- White text on dark bg -->
+    <color name="text_secondary">#BBBBBB</color> <!-- Light grey text on dark bg -->
+    <color name="text_tertiary">#888888</color> <!-- Grey text on dark bg -->
+</resources>
+
