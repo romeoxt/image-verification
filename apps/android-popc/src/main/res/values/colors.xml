@@ -9,13 +9,13 @@
     <color name="white">#FFFFFFFF</color>
 
     <!-- Status colors -->
-    <color name="success">#4CAF50</color>
+    <color name="success">#2E7D32</color> <!-- Darker green for better readability -->
     <color name="success_light">#E8F5E9</color>
-    <color name="error">#F44336</color>
+    <color name="error">#C62828</color> <!-- Darker red for better readability -->
     <color name="error_light">#FFEBEE</color>
-    <color name="warning">#FF9800</color>
+    <color name="warning">#EF6C00</color> <!-- Darker orange for better readability -->
     <color name="warning_light">#FFF3E0</color>
     <color name="warning_dark">#E65100</color>
-    <color name="neutral">#9E9E9E</color>
+    <color name="neutral">#424242</color> <!-- Darker grey for better readability -->
     <color name="neutral_light">#F5F5F5</color>
 </resources>
