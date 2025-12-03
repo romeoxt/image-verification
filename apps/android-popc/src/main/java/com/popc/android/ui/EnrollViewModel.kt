@@ -6,7 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.popc.android.api.EnrollmentException
-import com.popc.android.api.PopcApiClient
+import com.popc.android.api.PopcApiClientV2
 import com.popc.android.crypto.CryptoUtils.toPem
 import com.popc.android.crypto.KeystoreManager
 import com.popc.android.data.EnrollmentData
@@ -18,7 +18,7 @@ import timber.log.Timber
 
 class EnrollViewModel(
     private val keystoreManager: KeystoreManager,
-    private val apiClient: PopcApiClient,
+    private val apiClient: PopcApiClientV2,
     private val enrollmentStore: EnrollmentStore
 ) : ViewModel() {
 
@@ -73,7 +73,8 @@ class EnrollViewModel(
                 val deviceMetadata = mapOf(
                     "manufacturer" to Build.MANUFACTURER,
                     "model" to Build.MODEL,
-                    "osVersion" to Build.VERSION.RELEASE
+                    "osVersion" to Build.VERSION.RELEASE,
+                    "clientSecurityLevel" to attestationResult.securityLevel.name.lowercase()
                 )
 
                 // Enroll with API

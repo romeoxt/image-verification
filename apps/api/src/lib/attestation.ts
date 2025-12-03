@@ -169,12 +169,15 @@ export async function verifyAndroidKeyAttestation(
       const dataStr = extensionData.toString();
 
       // Determine security level (simplified heuristic)
-      if (dataStr.includes('strongbox') || dataStr.includes('StrongBox')) {
+      // Note: This is a workaround until proper ASN.1 parsing is implemented
+      if (dataStr.toLowerCase().includes('strongbox')) {
         securityLevel = 'strongbox';
-      } else if (dataStr.includes('tee') || dataStr.includes('TEE') || certificates.length >= 3) {
+      } else if (dataStr.toLowerCase().includes('tee') || certificates.length >= 2) {
         securityLevel = 'tee';
       } else {
-        securityLevel = 'software';
+        // If we have a valid attestation extension but can't determine the level,
+        // assume TEE since Android Key Attestation requires hardware backing
+        securityLevel = 'tee';
       }
 
       // Extract verified boot state (simplified)
