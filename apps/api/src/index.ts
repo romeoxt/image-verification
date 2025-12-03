@@ -18,7 +18,7 @@ import type { Config } from './types/index.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// Load environment variables
+// Load environment variables from .env file
 loadEnv();
 
 // Configuration
