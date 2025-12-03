@@ -8,14 +8,19 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
-    <!-- Status colors -->
-    <color name="success">#2E7D32</color> <!-- Darker green for better readability -->
+    <!-- Status colors for LIGHT theme -->
+    <color name="success">#2E7D32</color> <!-- Dark green for light backgrounds -->
     <color name="success_light">#E8F5E9</color>
-    <color name="error">#C62828</color> <!-- Darker red for better readability -->
+    <color name="error">#C62828</color> <!-- Dark red for light backgrounds -->
     <color name="error_light">#FFEBEE</color>
-    <color name="warning">#EF6C00</color> <!-- Darker orange for better readability -->
+    <color name="warning">#EF6C00</color> <!-- Dark orange for light backgrounds -->
     <color name="warning_light">#FFF3E0</color>
     <color name="warning_dark">#E65100</color>
-    <color name="neutral">#424242</color> <!-- Darker grey for better readability -->
+    <color name="neutral">#424242</color> <!-- Dark grey for light backgrounds -->
     <color name="neutral_light">#F5F5F5</color>
+    
+    <!-- Semantic text colors for LIGHT theme -->
+    <color name="text_primary">#000000</color> <!-- Black text on light bg -->
+    <color name="text_secondary">#666666</color> <!-- Grey text on light bg -->
+    <color name="text_tertiary">#999999</color> <!-- Light grey text on light bg -->
 </resources>

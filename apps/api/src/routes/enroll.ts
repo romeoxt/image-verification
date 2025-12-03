@@ -140,10 +140,10 @@ export const enrollRoutes: FastifyPluginAsync = async (fastify) => {
         let actualSecurityLevel = attestationResult.securityLevel;
         if (attestationResult.securityLevel === 'tee' && deviceMetadata?.clientSecurityLevel === 'strongbox') {
           actualSecurityLevel = 'strongbox';
-          fastify.log.info(`✅ Client reports StrongBox, using that instead of backend TEE detection`);
+          fastify.log.info(`Client reports StrongBox, using that instead of backend TEE detection`);
         } else if (deviceMetadata?.clientSecurityLevel === 'strongbox') {
           actualSecurityLevel = 'strongbox';
-          fastify.log.info(`✅ Client reports StrongBox, trusting client (backend detected: ${attestationResult.securityLevel})`);
+          fastify.log.info(`Client reports StrongBox, trusting client (backend detected: ${attestationResult.securityLevel})`);
         }
         
         fastify.log.info(`Final actualSecurityLevel: ${actualSecurityLevel}`);
