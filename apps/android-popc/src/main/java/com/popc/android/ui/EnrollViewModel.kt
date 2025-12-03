@@ -89,6 +89,12 @@ class EnrollViewModel(
 
                 Timber.i("Enrollment successful: ${response.deviceId}")
 
+                // Log backend response for debugging
+                Timber.i("Backend response - securityLevel: ${response.attestationDetails?.securityLevel}")
+                Timber.i("Backend response - attestationType: ${response.attestationDetails?.attestationType}")
+                Timber.i("Backend response - hardwareBacked: ${response.attestationDetails?.hardwareBacked}")
+                Timber.i("Backend response - bootState: ${response.attestationDetails?.bootState}")
+                
                 // Save enrollment data
                 val enrollmentData = EnrollmentData(
                     deviceId = response.deviceId,
@@ -99,6 +105,8 @@ class EnrollViewModel(
                     hardwareBacked = response.attestationDetails?.hardwareBacked ?: true,
                     bootState = response.attestationDetails?.bootState
                 )
+                
+                Timber.i("Saved enrollment - securityLevel: ${enrollmentData.securityLevel}")
 
                 enrollmentStore.saveEnrollment(enrollmentData)
 
