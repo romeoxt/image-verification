@@ -332,7 +332,7 @@ class CaptureFragment : Fragment() {
             val verdictText = "${state.verdict.uppercase()} (${state.mode})"
             binding.txtVerdict.text = verdictText
 
-            // Color code verdict
+            // Color code verdict - background and text
             val bgColor = when (state.verdict.lowercase()) {
                 "verified" -> ContextCompat.getColor(requireContext(), R.color.success_light)
                 "tampered", "invalid", "revoked" -> ContextCompat.getColor(requireContext(), R.color.error_light)
@@ -340,6 +340,15 @@ class CaptureFragment : Fragment() {
                 else -> ContextCompat.getColor(requireContext(), R.color.neutral_light)
             }
             binding.resultCard.setCardBackgroundColor(bgColor)
+            
+            // Set verdict text color (bold and readable)
+            val textColor = when (state.verdict.lowercase()) {
+                "verified" -> ContextCompat.getColor(requireContext(), R.color.success)
+                "tampered", "invalid", "revoked" -> ContextCompat.getColor(requireContext(), R.color.error)
+                "unsigned" -> ContextCompat.getColor(requireContext(), R.color.warning)
+                else -> ContextCompat.getColor(requireContext(), R.color.neutral)
+            }
+            binding.txtVerdict.setTextColor(textColor)
 
             // Show confidence if present
             state.confidence?.let {
