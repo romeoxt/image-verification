@@ -24,6 +24,13 @@ class PopcApiClientV2(
         .connectTimeout(30, TimeUnit.SECONDS)
         .readTimeout(60, TimeUnit.SECONDS)
         .writeTimeout(60, TimeUnit.SECONDS)
+        .addInterceptor { chain ->
+            // Add API key authentication header to all requests
+            val request = chain.request().newBuilder()
+                .addHeader("Authorization", "Bearer ${BuildConfig.API_KEY}")
+                .build()
+            chain.proceed(request)
+        }
         .addInterceptor(HttpLoggingInterceptor { message ->
             Timber.tag("OkHttp").d(message)
         }.apply {
