@@ -92,6 +92,9 @@ dependencies {
     // Logging
     implementation("com.jakewharton.timber:timber:5.0.1")
 
+    // ExifInterface for image orientation
+    implementation("androidx.exifinterface:exifinterface:1.3.7")
+
     // Testing
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
