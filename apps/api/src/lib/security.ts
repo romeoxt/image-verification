@@ -4,15 +4,14 @@
  * - Request validation
  */
 
-import { FastifyRequest, FastifyReply, FastifyInstance } from 'fastify';
+import { FastifyRequest, FastifyReply } from 'fastify';
 
 /**
  * Add security headers to all responses
  */
 export async function securityHeaders(
   request: FastifyRequest,
-  reply: FastifyReply,
-  fastify: FastifyInstance
+  reply: FastifyReply
 ): Promise<void> {
   // Prevent clickjacking
   reply.header('X-Frame-Options', 'DENY');

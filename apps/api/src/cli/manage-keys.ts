@@ -199,13 +199,13 @@ async function main() {
   try {
     switch (command) {
       case 'create': {
-        const name = args.find((arg, i) => args[i - 1] === '--name');
-        const description = args.find((arg, i) => args[i - 1] === '--description');
-        const scopesStr = args.find((arg, i) => args[i - 1] === '--scopes');
+        const name = args.find((_arg, i) => args[i - 1] === '--name');
+        const description = args.find((_arg, i) => args[i - 1] === '--description');
+        const scopesStr = args.find((_arg, i) => args[i - 1] === '--scopes');
         const scopes = scopesStr ? scopesStr.split(',') : undefined;
-        const rateLimitMin = args.find((arg, i) => args[i - 1] === '--rate-minute');
-        const rateLimitDay = args.find((arg, i) => args[i - 1] === '--rate-day');
-        const expiresInDays = args.find((arg, i) => args[i - 1] === '--expires-days');
+        const rateLimitMin = args.find((_arg, i) => args[i - 1] === '--rate-minute');
+        const rateLimitDay = args.find((_arg, i) => args[i - 1] === '--rate-day');
+        const expiresInDays = args.find((_arg, i) => args[i - 1] === '--expires-days');
 
         if (!name) {
           console.error('Error: --name is required');
@@ -228,7 +228,7 @@ async function main() {
         break;
 
       case 'revoke': {
-        const keyId = args.find((arg, i) => args[i - 1] === '--id');
+        const keyId = args.find((_arg, i) => args[i - 1] === '--id');
         if (!keyId) {
           console.error('Error: --id is required');
           process.exit(1);
@@ -238,7 +238,7 @@ async function main() {
       }
 
       case 'info': {
-        const keyId = args.find((arg, i) => args[i - 1] === '--id');
+        const keyId = args.find((_arg, i) => args[i - 1] === '--id');
         if (!keyId) {
           console.error('Error: --id is required');
           process.exit(1);
