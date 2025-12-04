@@ -90,7 +90,7 @@ async function registerPlugins() {
 async function registerMiddleware() {
   // Add security headers to all responses
   fastify.addHook('onRequest', async (request, reply) => {
-    await securityHeaders(request, reply, fastify);
+    await securityHeaders(request, reply);
   });
 
   // Add API key authentication to all /v1/* routes (except public endpoints)
