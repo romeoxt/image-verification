@@ -13,15 +13,45 @@ import java.util.*
  */
 class ManifestBuilder {
 
-    fun buildManifest(
+    fun createAssertions(
         assetHash: String,
         deviceId: String,
-        publicKey: PublicKey,
-        signature: ByteArray,
         metadata: Map<String, Any> = emptyMap(),
         customAssertions: Map<String, Any> = emptyMap()
-    ): String {
+    ): JSONObject {
         val timestamp = Instant.now().toString()
+        return JSONObject().apply {
+            put("c2pa.hash.data", JSONObject().apply {
+                put("algorithm", "sha256")
+                put("hash", assetHash)
+            })
+            put("popc.device.id", deviceId)
+            put("c2pa.timestamp", timestamp)
+
+            // Add custom assertions
+            customAssertions.forEach { (key, value) ->
+                when (value) {
+                    is String -> put(key, value)
+                    is Int -> put(key, value)
+                    is Boolean -> put(key, value)
+                    is Map<*, *> -> put(key, JSONObject(value as Map<String, Any>))
+                    else -> put(key, value.toString())
+                }
+            }
+
+            // Add metadata
+            metadata.forEach { (key, value) ->
+                put(key, value)
+            }
+        }
+    }
+
+    fun buildManifest(
+        assertions: JSONObject,
+        assetHash: String, // Still needed for claim structure
+        publicKey: PublicKey,
+        signature: ByteArray
+    ): String {
         val instanceId = UUID.randomUUID().toString()
 
         val manifest = JSONObject().apply {
@@ -52,33 +82,10 @@ class ManifestBuilder {
             })
 
             // Assertions
-            put("assertions", JSONObject().apply {
-                put("c2pa.hash.data", JSONObject().apply {
-                    put("algorithm", "sha256")
-                    put("hash", assetHash)
-                })
-                put("popc.device.id", deviceId)
-                put("c2pa.timestamp", timestamp)
-
-                // Add custom assertions first (allows overriding defaults if needed)
-                customAssertions.forEach { (key, value) ->
-                    when (value) {
-                        is String -> put(key, value)
-                        is Int -> put(key, value)
-                        is Boolean -> put(key, value)
-                        is Map<*, *> -> put(key, JSONObject(value as Map<String, Any>))
-                        else -> put(key, value.toString())
-                    }
-                }
-
-                // Add metadata
-                metadata.forEach { (key, value) ->
-                    put(key, value)
-                }
-            })
+            put("assertions", assertions)
         }
 
-        return manifest.toString(2) // Pretty print with 2-space indent
+        return manifest.toString(2)
     }
 
     /**

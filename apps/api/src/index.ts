@@ -9,10 +9,12 @@ import fastifyStatic from '@fastify/static';
 import { config as loadEnv } from 'dotenv';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
-import { initDb, closeDb } from './lib/db.js';
+import { initDb, closeDb, getDb } from './lib/db.js';
 import { verifyRoutes } from './routes/verify.js';
 import { evidenceRoutes } from './routes/evidence.js';
 import { enrollRoutes } from './routes/enroll.js';
+import { authenticateApiKey, type AuthenticatedRequest } from './lib/auth.js';
+import { securityHeaders } from './lib/security.js';
 import type { Config } from './types/index.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -83,6 +85,43 @@ async function registerPlugins() {
 }
 
 /**
+ * Register security middleware
+ */
+async function registerMiddleware() {
+  // Add security headers to all responses
+  fastify.addHook('onRequest', async (request, reply) => {
+    await securityHeaders(request, reply, fastify);
+  });
+
+  // Add API key authentication to all /v1/* routes (except public endpoints)
+  fastify.addHook('onRequest', async (request: AuthenticatedRequest, reply) => {
+    // Skip auth for public endpoints
+    const publicEndpoints = [
+      '/',
+      '/health',
+      '/v1/verify/ui', // Public UI
+    ];
+
+    // Check if this is a public endpoint
+    if (publicEndpoints.includes(request.url)) {
+      return;
+    }
+
+    // Check if auth is disabled (development only)
+    if (process.env.DISABLE_API_AUTH === 'true') {
+      fastify.log.warn('API authentication is DISABLED - development only');
+      return;
+    }
+
+    // Require authentication for all other /v1/* endpoints
+    if (request.url.startsWith('/v1/')) {
+      const db = getDb();
+      await authenticateApiKey(request, reply, fastify, db);
+    }
+  });
+}
+
+/**
  * Register routes
  */
 async function registerRoutes() {
@@ -144,8 +183,9 @@ async function start() {
     });
     fastify.log.info('Database connected');
 
-    // Register plugins and routes
+    // Register plugins, middleware, and routes
     await registerPlugins();
+    await registerMiddleware();
     await registerRoutes();
 
     // Start listening

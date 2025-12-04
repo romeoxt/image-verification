@@ -1,13 +1,15 @@
 package com.popc.android.ui
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.popc.android.api.PopcApiClient
+import com.popc.android.api.PopcApiClientV2
 import com.popc.android.c2pa.ManifestBuilder
 import com.popc.android.crypto.CryptoUtils
 import com.popc.android.crypto.KeystoreManager
-import com.popc.android.storage.EnrollmentStore
+import com.popc.android.data.EnrollmentStore
 import com.popc.android.utils.ExifHelper
+import com.popc.android.utils.ImageUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -30,9 +32,10 @@ data class ImportUiState(
 )
 
 class ImportViewModel(
+    private val context: Context,
     private val keystoreManager: KeystoreManager,
     private val manifestBuilder: ManifestBuilder,
-    private val apiClient: PopcApiClient,
+    private val apiClient: PopcApiClientV2,
     private val enrollmentStore: EnrollmentStore
 ) : ViewModel() {
 
@@ -77,8 +80,23 @@ class ImportViewModel(
             try {
                 _state.value = _state.value.copy(loading = true, error = null)
 
+                // Compress image for upload
+                val compressedFile = withContext(Dispatchers.IO) {
+                    ImageUtils.compressForUpload(
+                        sourceFile = File(imagePath),
+                        context = context
+                    )
+                }
+
                 val response = withContext(Dispatchers.IO) {
-                    apiClient.verifyHeuristic(File(imagePath))
+                    apiClient.verifyHeuristic(compressedFile)
+                }
+
+                // Clean up compressed temp file if different from original
+                if (compressedFile.absolutePath != imagePath) {
+                    withContext(Dispatchers.IO) {
+                        compressedFile.delete()
+                    }
                 }
 
                 _state.value = _state.value.copy(
@@ -140,34 +158,35 @@ class ImportViewModel(
                     customAssertions["popc.capture.original_time"] = it
                 }
 
-                // Build assertions JSON for signing
-                val assertionsJson = buildAssertionsJson(
-                    sha256Hex,
-                    enrollmentData.deviceId,
-                    customAssertions
+                // Build assertions object using ManifestBuilder
+                val assertionsObj = manifestBuilder.createAssertions(
+                    assetHash = sha256Hex,
+                    deviceId = enrollmentData.deviceId,
+                    metadata = mapOf(
+                        "platform" to "android",
+                        "model" to android.os.Build.MODEL
+                    ),
+                    customAssertions = customAssertions
                 )
 
-                Timber.d("Signing assertions: $assertionsJson")
+                Timber.d("Signing assertions: $assertionsObj")
 
-                // Sign the assertions JSON
+                // Sign the assertions JSON (minified)
+                val assertionsJson = assertionsObj.toString()
                 val signature = withContext(Dispatchers.IO) {
                     keystoreManager.signData(assertionsJson.toByteArray(Charsets.UTF_8))
                 }
 
                 // Get public key
                 val publicKey = keystoreManager.getPublicKey()
+                    ?: throw IllegalStateException("Public key not found")
 
                 // Build manifest
                 val manifestJson = manifestBuilder.buildManifest(
+                    assertions = assertionsObj,
                     assetHash = sha256Hex,
-                    deviceId = enrollmentData.deviceId,
                     publicKey = publicKey,
-                    signature = signature,
-                    metadata = mapOf(
-                        "platform" to "android",
-                        "model" to android.os.Build.MODEL
-                    ),
-                    customAssertions = customAssertions
+                    signature = signature
                 )
 
                 // Save manifest sidecar
@@ -178,9 +197,24 @@ class ImportViewModel(
 
                 Timber.d("Manifest saved to: ${manifestFile.absolutePath}")
 
-                // Verify with API
+                // Compress image for upload
+                val compressedImageFile = withContext(Dispatchers.IO) {
+                    ImageUtils.compressForUpload(
+                        sourceFile = imageFile,
+                        context = context
+                    )
+                }
+
+                // Verify with API (using compressed image)
                 val response = withContext(Dispatchers.IO) {
-                    apiClient.verify(imageFile, manifestFile)
+                    apiClient.verify(compressedImageFile, manifestFile)
+                }
+
+                // Clean up compressed temp file if different from original
+                if (compressedImageFile.absolutePath != imageFile.absolutePath) {
+                    withContext(Dispatchers.IO) {
+                        compressedImageFile.delete()
+                    }
                 }
 
                 _state.value = _state.value.copy(
@@ -201,37 +235,6 @@ class ImportViewModel(
                 )
             }
         }
-    }
-
-    private fun buildAssertionsJson(
-        assetHash: String,
-        deviceId: String,
-        customAssertions: Map<String, Any>
-    ): String {
-        val json = StringBuilder()
-        json.append("{\n")
-        json.append("  \"c2pa.hash.data\": {\n")
-        json.append("    \"algorithm\": \"sha256\",\n")
-        json.append("    \"hash\": \"$assetHash\"\n")
-        json.append("  },\n")
-        json.append("  \"popc.device.id\": \"$deviceId\",\n")
-        json.append("  \"c2pa.timestamp\": \"${java.time.Instant.now()}\",\n")
-        json.append("  \"platform\": \"android\",\n")
-        json.append("  \"model\": \"${android.os.Build.MODEL}\"")
-
-        // Add custom assertions
-        customAssertions.forEach { (key, value) ->
-            json.append(",\n")
-            when (value) {
-                is String -> json.append("  \"$key\": \"$value\"")
-                is Number -> json.append("  \"$key\": $value")
-                is Boolean -> json.append("  \"$key\": $value")
-                else -> json.append("  \"$key\": \"$value\"")
-            }
-        }
-
-        json.append("\n}")
-        return json.toString()
     }
 
     fun clearError() {

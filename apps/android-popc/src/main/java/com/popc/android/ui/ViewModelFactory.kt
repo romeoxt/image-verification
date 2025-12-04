@@ -37,6 +37,7 @@ class ViewModelFactory(
             }
             modelClass.isAssignableFrom(ImportViewModel::class.java) -> {
                 ImportViewModel(
+                    context = context,
                     keystoreManager = ServiceLocator.provideKeystoreManager(context),
                     manifestBuilder = ServiceLocator.provideManifestBuilder(),
                     apiClient = ServiceLocator.provideApiClient(),

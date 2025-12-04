@@ -10,6 +10,20 @@ function StatusBadge({ revokedAt }: { revokedAt: Date | null }) {
   return <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-green-600 text-white hover:bg-green-600/80">Active</span>
 }
 
+function SecurityBadge({ level }: { level: string | null }) {
+  const levelUpper = (level || '').toUpperCase();
+  
+  if (levelUpper === 'STRONGBOX') {
+    return <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold border-transparent bg-purple-100 text-purple-800">StrongBox</span>;
+  } else if (levelUpper === 'TEE') {
+    return <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold border-transparent bg-blue-100 text-blue-800">TEE</span>;
+  } else if (levelUpper === 'SOFTWARE') {
+    return <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold border-transparent bg-orange-100 text-orange-800">Software</span>;
+  } else {
+    return <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold border-transparent bg-gray-100 text-gray-800">Unknown</span>;
+  }
+}
+
 export default async function DevicesPage() {
   // Fetch devices from DB
   // We try/catch to handle DB connection errors gracefully in UI
@@ -49,6 +63,7 @@ export default async function DevicesPage() {
               <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">ID</th>
               <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Model</th>
               <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Platform</th>
+              <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Security</th>
               <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Status</th>
               <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Enrolled</th>
               <th className="h-12 px-4 text-right align-middle font-medium text-muted-foreground">Actions</th>
@@ -57,7 +72,7 @@ export default async function DevicesPage() {
           <tbody className="[&_tr:last-child]:border-0">
             {!error && devices.length === 0 && (
               <tr>
-                <td colSpan={6} className="p-4 text-center text-muted-foreground">
+                <td colSpan={7} className="p-4 text-center text-muted-foreground">
                   No devices found.
                 </td>
               </tr>
@@ -67,6 +82,9 @@ export default async function DevicesPage() {
                 <td className="p-4 align-middle font-mono text-xs">{device.id.substring(0, 8)}...</td>
                 <td className="p-4 align-middle">{device.manufacturer} {device.model}</td>
                 <td className="p-4 align-middle capitalize">{device.platform || 'Unknown'}</td>
+                <td className="p-4 align-middle">
+                  <SecurityBadge level={device.security_level} />
+                </td>
                 <td className="p-4 align-middle">
                   <StatusBadge revokedAt={device.revoked_at} />
                 </td>

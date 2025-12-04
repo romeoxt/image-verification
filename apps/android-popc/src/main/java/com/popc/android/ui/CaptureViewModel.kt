@@ -4,11 +4,12 @@ import android.content.Context
 import android.os.Build
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.popc.android.api.PopcApiClient
+import com.popc.android.api.PopcApiClientV2
 import com.popc.android.c2pa.ManifestBuilder
 import com.popc.android.crypto.CryptoUtils
 import com.popc.android.crypto.KeystoreManager
 import com.popc.android.data.EnrollmentStore
+import com.popc.android.utils.ImageUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,7 +23,7 @@ import java.time.Instant
 class CaptureViewModel(
     private val keystoreManager: KeystoreManager,
     private val manifestBuilder: ManifestBuilder,
-    private val apiClient: PopcApiClient,
+    private val apiClient: PopcApiClientV2,
     private val enrollmentStore: EnrollmentStore
 ) : ViewModel() {
 
@@ -88,8 +89,20 @@ class CaptureViewModel(
 
                 Timber.i("Signing image with hash: ${hashHex.take(16)}...")
 
-                // Build assertions JSON for signing (matching C2PA verifier expectations)
-                val assertionsJson = buildAssertionsJson(hashHex, deviceId)
+                // Create assertions JSON object using ManifestBuilder
+                val assertionsObj = manifestBuilder.createAssertions(
+                    assetHash = hashHex,
+                    deviceId = deviceId,
+                    metadata = mapOf(
+                        "platform" to "android",
+                        "model" to Build.MODEL,
+                        "manufacturer" to Build.MANUFACTURER
+                    )
+                )
+
+                // Sign the assertions JSON string (minified)
+                val assertionsJson = assertionsObj.toString()
+                Timber.i("Signing assertions: $assertionsJson")
 
                 // Sign the assertions JSON
                 val signature = withContext(Dispatchers.IO) {
@@ -104,15 +117,10 @@ class CaptureViewModel(
 
                 // Build C2PA manifest
                 val manifestJson = manifestBuilder.buildManifest(
+                    assertions = assertionsObj,
                     assetHash = hashHex,
-                    deviceId = deviceId,
                     publicKey = publicKey,
-                    signature = signature,
-                    metadata = mapOf(
-                        "platform" to "android",
-                        "model" to Build.MODEL,
-                        "manufacturer" to Build.MANUFACTURER
-                    )
+                    signature = signature
                 )
 
                 // Save manifest sidecar
@@ -123,12 +131,27 @@ class CaptureViewModel(
 
                 Timber.i("Manifest saved: $manifestPath")
 
-                // Verify with API
+                // Compress image for upload (reduces upload time and bandwidth)
+                val compressedImageFile = withContext(Dispatchers.IO) {
+                    ImageUtils.compressForUpload(
+                        sourceFile = File(capturedPath),
+                        context = context
+                    )
+                }
+
+                // Verify with API (using compressed image)
                 val response = withContext(Dispatchers.IO) {
                     apiClient.verify(
-                        imageFile = File(capturedPath),
+                        imageFile = compressedImageFile,
                         manifestFile = File(manifestPath)
                     )
+                }
+                
+                // Clean up compressed temp file if it's different from original
+                if (compressedImageFile.absolutePath != capturedPath) {
+                    withContext(Dispatchers.IO) {
+                        compressedImageFile.delete()
+                    }
                 }
 
                 Timber.i("Verification result: ${response.verdict} (${response.mode})")
@@ -151,24 +174,6 @@ class CaptureViewModel(
                 )
             }
         }
-    }
-
-    private fun buildAssertionsJson(assetHash: String, deviceId: String): String {
-        // Build assertions object that matches what C2PA verifier expects
-        val timestamp = Instant.now().toString()
-
-        return """
-            {
-                "c2pa.hash.data": {
-                    "algorithm": "sha256",
-                    "hash": "$assetHash"
-                },
-                "popc.device.id": "$deviceId",
-                "c2pa.timestamp": "$timestamp",
-                "platform": "android",
-                "model": "${Build.MODEL}"
-            }
-        """.trimIndent()
     }
 
     fun reset() {
