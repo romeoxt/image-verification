@@ -44,6 +44,7 @@ class EnrollFragment : Fragment() {
 
     private fun setupClickListeners() {
         binding.btnEnroll.setOnClickListener {
+            android.util.Log.d("EnrollFragment", "Enroll button clicked!")
             viewModel.enroll()
         }
 
@@ -74,7 +75,7 @@ class EnrollFragment : Fragment() {
         }
 
         state.warnings?.takeIf { it.isNotEmpty() }?.let { warnings ->
-            binding.tvWarnings.text = "Warnings:\n${warnings.joinToString("\n• ", "• ")}"
+            binding.tvWarnings.text = "System Info:\n${warnings.joinToString("\n• ", "• ")}"
             binding.tvWarnings.isVisible = true
         } ?: run {
             binding.tvWarnings.isVisible = false

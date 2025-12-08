@@ -24,12 +24,22 @@ android {
     }
 
     buildTypes {
+        debug {
+            // Development build - full logging enabled
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = "-debug"
+            isDebuggable = true
+        }
         release {
-            isMinifyEnabled = false
+            // Production build - optimizations for battery life
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            // Disable debugging in release
+            isDebuggable = false
         }
     }
 

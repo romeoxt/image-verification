@@ -2,7 +2,7 @@ package com.popc.android.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.popc.android.api.PopcApiClient
+import com.popc.android.api.PopcApiClientV2
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -12,7 +12,7 @@ import kotlinx.coroutines.withContext
 import timber.log.Timber
 
 class EvidenceViewModel(
-    private val apiClient: PopcApiClient
+    private val apiClient: PopcApiClientV2
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(EvidenceUiState())

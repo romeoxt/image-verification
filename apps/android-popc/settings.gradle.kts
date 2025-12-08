@@ -15,4 +15,4 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "PoPC Android"
-include(":app")
+

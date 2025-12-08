@@ -31,11 +31,16 @@ class PopcApiClientV2(
                 .build()
             chain.proceed(request)
         }
-        .addInterceptor(HttpLoggingInterceptor { message ->
-            Timber.tag("OkHttp").d(message)
-        }.apply {
-            level = HttpLoggingInterceptor.Level.BASIC
-        })
+        .apply {
+            // Only enable HTTP logging in debug builds to save battery
+            if (BuildConfig.DEBUG) {
+                addInterceptor(HttpLoggingInterceptor { message ->
+                    Timber.tag("OkHttp").d(message)
+                }.apply {
+                    level = HttpLoggingInterceptor.Level.BASIC
+                })
+            }
+        }
         .build()
 
     private val baseUrl: String = baseUrl.trimEnd('/')
