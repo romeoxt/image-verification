@@ -46,6 +46,7 @@ class CaptureFragment : Fragment() {
     private var videoCapture: VideoCapture<Recorder>? = null
     private var recording: Recording? = null
     private lateinit var cameraExecutor: ExecutorService
+    private var cameraProvider: ProcessCameraProvider? = null
 
     private var isVideoMode = false
 
@@ -166,18 +167,19 @@ class CaptureFragment : Fragment() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(requireContext())
 
         cameraProviderFuture.addListener({
-            val cameraProvider = cameraProviderFuture.get()
-
-            val preview = Preview.Builder()
-                .build()
-                .also {
-                    it.setSurfaceProvider(binding.previewView.surfaceProvider)
-                }
-
-            val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
-
             try {
-                cameraProvider.unbindAll()
+                cameraProvider = cameraProviderFuture.get()
+
+                val preview = Preview.Builder()
+                    .build()
+                    .also {
+                        it.setSurfaceProvider(binding.previewView.surfaceProvider)
+                    }
+
+                val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+
+                // Unbind all previous use cases
+                cameraProvider?.unbindAll()
 
                 if (isVideoMode) {
                     val recorder = Recorder.Builder()
@@ -185,7 +187,7 @@ class CaptureFragment : Fragment() {
                         .build()
                     videoCapture = VideoCapture.withOutput(recorder)
 
-                    cameraProvider.bindToLifecycle(
+                    cameraProvider?.bindToLifecycle(
                         viewLifecycleOwner,
                         cameraSelector,
                         preview,
@@ -196,7 +198,7 @@ class CaptureFragment : Fragment() {
                         .setCaptureMode(ImageCapture.CAPTURE_MODE_MAXIMIZE_QUALITY)
                         .build()
 
-                    cameraProvider.bindToLifecycle(
+                    cameraProvider?.bindToLifecycle(
                         viewLifecycleOwner,
                         cameraSelector,
                         preview,
@@ -379,9 +381,50 @@ class CaptureFragment : Fragment() {
         }
     }
 
+    override fun onPause() {
+        super.onPause()
+        // Release camera when fragment is paused to save battery
+        // This is critical for battery optimization
+        cameraProvider?.unbindAll()
+        Timber.d("Camera released (onPause) - saving battery")
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Restart camera when fragment resumes ONLY if we had permission before
+        // Don't restart camera unnecessarily
+        if (ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.CAMERA
+            ) == PackageManager.PERMISSION_GRANTED && 
+            cameraProvider != null  // Only restart if camera was previously initialized
+        ) {
+            startCamera()
+            Timber.d("Camera restarted (onResume)")
+        }
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
+        
+        // Stop any ongoing recording
+        recording?.stop()
+        recording = null
+        
+        // Unbind all camera use cases
+        cameraProvider?.unbindAll()
+        cameraProvider = null
+        
+        // Release camera references
+        imageCapture = null
+        videoCapture = null
+        
+        // Shutdown executor
         cameraExecutor.shutdown()
+        
+        // Clear binding
         _binding = null
+        
+        Timber.d("Camera resources released")
     }
 }
