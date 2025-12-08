@@ -1,0 +1,47 @@
+{
+  "name": "@popc/node",
+  "version": "1.0.0",
+  "description": "PoPC Node.js SDK - Verify photos and videos cryptographically",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "jest",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "popc",
+    "verification",
+    "c2pa",
+    "attestation",
+    "trusted-capture",
+    "proof-of-physical-capture",
+    "photo-verification",
+    "media-authenticity"
+  ],
+  "author": "PoPC <hello@popc.dev>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/romeoxt/image-verification.git",
+    "directory": "packages/node-sdk"
+  },
+  "homepage": "https://popc.dev",
+  "bugs": {
+    "url": "https://github.com/romeoxt/image-verification/issues"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "dependencies": {
+    "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.6",
+    "typescript": "^5.3.3",
+    "jest": "^29.7.0"
+  }
+}
+
