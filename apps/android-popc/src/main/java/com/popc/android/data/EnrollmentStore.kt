@@ -4,9 +4,11 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
+import com.popc.android.crypto.CertificatePinning
+import timber.log.Timber
 
 /**
- * Secure storage for enrollment data
+ * Secure storage for enrollment data with certificate pinning
  */
 class EnrollmentStore(context: Context) {
 
@@ -27,7 +29,9 @@ class EnrollmentStore(context: Context) {
         context.getSharedPreferences("popc_enrollment", Context.MODE_PRIVATE)
     }
 
-    fun saveEnrollment(enrollment: EnrollmentData) {
+    private val certificatePinning = CertificatePinning(context)
+
+    fun saveEnrollment(enrollment: EnrollmentData, publicKeyPem: String? = null) {
         prefs.edit().apply {
             putString(KEY_DEVICE_ID, enrollment.deviceId)
             putString(KEY_ENROLLED_AT, enrollment.enrolledAt)
@@ -35,7 +39,14 @@ class EnrollmentStore(context: Context) {
             putString(KEY_ATTESTATION_TYPE, enrollment.attestationType)
             putBoolean(KEY_HARDWARE_BACKED, enrollment.hardwareBacked)
             enrollment.bootState?.let { putString(KEY_BOOT_STATE, it) }
+            publicKeyPem?.let { putString(KEY_PUBLIC_KEY, it) }
             apply()
+        }
+        
+        // Pin the public key for certificate pinning (security against backend compromise)
+        if (publicKeyPem != null) {
+            certificatePinning.pinPublicKey(enrollment.deviceId, publicKeyPem)
+            Timber.i("Public key pinned for device ${enrollment.deviceId}")
         }
     }
 
@@ -56,8 +67,29 @@ class EnrollmentStore(context: Context) {
         return prefs.contains(KEY_DEVICE_ID)
     }
 
+    /**
+     * Verify that the backend's public key matches our pinned key
+     * 
+     * Returns:
+     * - true: Public key matches (safe to continue)
+     * - false: Public key mismatch (SECURITY ALERT - backend may be compromised)
+     * - null: No pinned key yet (first enrollment)
+     */
+    fun verifyPublicKey(deviceId: String, backendPublicKeyPem: String): Boolean? {
+        return certificatePinning.verifyPublicKey(deviceId, backendPublicKeyPem)
+    }
+    
+    /**
+     * Check if we have a pinned public key for the device
+     */
+    fun hasPinnedKey(deviceId: String): Boolean {
+        return certificatePinning.hasPinnedKey(deviceId)
+    }
+
     fun clearEnrollment() {
         prefs.edit().clear().apply()
+        certificatePinning.clearPin()
+        Timber.i("Enrollment and certificate pin cleared")
     }
 
     companion object {
@@ -67,6 +99,7 @@ class EnrollmentStore(context: Context) {
         private const val KEY_ATTESTATION_TYPE = "attestation_type"
         private const val KEY_HARDWARE_BACKED = "hardware_backed"
         private const val KEY_BOOT_STATE = "boot_state"
+        private const val KEY_PUBLIC_KEY = "public_key"
     }
 }
 

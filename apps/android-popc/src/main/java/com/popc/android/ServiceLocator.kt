@@ -5,6 +5,8 @@ import com.popc.android.api.PopcApiClientV2
 import com.popc.android.c2pa.ManifestBuilder
 import com.popc.android.crypto.KeystoreManager
 import com.popc.android.data.EnrollmentStore
+import com.popc.android.utils.LocationHelper
+import com.popc.android.utils.SensorHelper
 
 /**
  * Simple service locator for dependency injection
@@ -14,6 +16,8 @@ object ServiceLocator {
     private var manifestBuilder: ManifestBuilder? = null
     private var apiClient: PopcApiClientV2? = null
     private var enrollmentStore: EnrollmentStore? = null
+    private var locationHelper: LocationHelper? = null
+    private var sensorHelper: SensorHelper? = null
 
     fun provideKeystoreManager(context: Context? = null): KeystoreManager {
         return keystoreManager ?: KeystoreManager(context?.applicationContext).also { keystoreManager = it }
@@ -33,10 +37,24 @@ object ServiceLocator {
         }
     }
 
+    fun provideLocationHelper(context: Context): LocationHelper {
+        return locationHelper ?: LocationHelper(context.applicationContext).also {
+            locationHelper = it
+        }
+    }
+
+    fun provideSensorHelper(context: Context): SensorHelper {
+        return sensorHelper ?: SensorHelper(context.applicationContext).also {
+            sensorHelper = it
+        }
+    }
+
     fun reset() {
         keystoreManager = null
         manifestBuilder = null
         apiClient = null
         enrollmentStore = null
+        locationHelper = null
+        sensorHelper = null
     }
 }

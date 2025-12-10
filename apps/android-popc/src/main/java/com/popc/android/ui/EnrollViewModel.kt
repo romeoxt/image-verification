@@ -95,7 +95,7 @@ class EnrollViewModel(
                 Timber.i("Backend response - hardwareBacked: ${response.attestationDetails?.hardwareBacked}")
                 Timber.i("Backend response - bootState: ${response.attestationDetails?.bootState}")
                 
-                // Save enrollment data
+                // Save enrollment data with certificate pinning
                 val enrollmentData = EnrollmentData(
                     deviceId = response.deviceId,
                     enrolledAt = response.enrolledAt,
@@ -108,7 +108,8 @@ class EnrollViewModel(
                 
                 Timber.i("Saved enrollment - securityLevel: ${enrollmentData.securityLevel}")
 
-                enrollmentStore.saveEnrollment(enrollmentData)
+                // Save enrollment and pin the public key for security
+                enrollmentStore.saveEnrollment(enrollmentData, publicKeyPem = certChainPem[0])
 
                 _uiState.value = EnrollUiState(
                     loading = false,

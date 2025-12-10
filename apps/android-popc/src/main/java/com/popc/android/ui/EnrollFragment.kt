@@ -10,6 +10,7 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.popc.android.R
 import com.popc.android.databinding.FragmentEnrollBinding
+import com.popc.android.utils.ErrorMessageUtils
 
 class EnrollFragment : Fragment() {
 
@@ -43,23 +44,34 @@ class EnrollFragment : Fragment() {
     }
 
     private fun setupClickListeners() {
-        binding.btnEnroll.setOnClickListener {
-            android.util.Log.d("EnrollFragment", "Enroll button clicked!")
-            viewModel.enroll()
+        binding.btnAction.setOnClickListener {
+            val state = viewModel.uiState.value ?: return@setOnClickListener
+            if (state.enrolled) {
+                // Continue to capture
+                findNavController().navigate(R.id.action_enroll_to_capture)
+            } else {
+                // Enroll
+                viewModel.enroll()
+            }
         }
 
-        binding.btnContinue.setOnClickListener {
-            findNavController().navigate(R.id.action_enroll_to_capture)
-        }
-
-        binding.btnReset.setOnClickListener {
+        binding.btnSecondaryAction.setOnClickListener {
             viewModel.resetEnrollment()
         }
     }
 
     private fun updateUI(state: EnrollUiState) {
-        binding.progressBar.isVisible = state.loading
-        binding.btnEnroll.isEnabled = !state.loading && !state.enrolled
+        // Loading State
+        if (state.loading) {
+            binding.loadingState.isVisible = true
+            binding.notEnrolledState.isVisible = false
+            binding.enrolledState.isVisible = false
+            binding.btnAction.isEnabled = false
+            return
+        }
+        
+        binding.loadingState.isVisible = false
+        binding.btnAction.isEnabled = true
 
         if (state.enrolled) {
             showEnrolledUI(state)
@@ -68,44 +80,29 @@ class EnrollFragment : Fragment() {
         }
 
         state.error?.let {
-            binding.tvError.text = it
+            binding.tvError.text = it // Use friendly error? ViewModel might already provide string
             binding.tvError.isVisible = true
         } ?: run {
             binding.tvError.isVisible = false
         }
-
-        state.warnings?.takeIf { it.isNotEmpty() }?.let { warnings ->
-            binding.tvWarnings.text = "System Info:\n${warnings.joinToString("\n• ", "• ")}"
-            binding.tvWarnings.isVisible = true
-        } ?: run {
-            binding.tvWarnings.isVisible = false
-        }
     }
 
     private fun showEnrolledUI(state: EnrollUiState) {
-        binding.enrollmentCard.isVisible = true
-        binding.notEnrolledCard.isVisible = false
+        binding.enrolledState.isVisible = true
+        binding.notEnrolledState.isVisible = false
+        
+        binding.tvSecurityLevel.text = "Security: ${state.securityLevel?.uppercase() ?: "Unknown"}\nDevice ID: ${state.deviceId?.take(8)}..."
 
-        binding.tvDeviceId.text = state.deviceId?.let { "Device ID: ${it.shortenHash()}" } ?: ""
-        binding.tvSecurityLevel.text = "Security: ${state.securityLevel?.uppercase() ?: "Unknown"}"
-        binding.tvAttestationType.text = "Type: ${state.attestationType ?: "Unknown"}"
-
-        state.verifiedBoot?.let {
-            binding.tvVerifiedBoot.text = "Boot State: $it"
-            binding.tvVerifiedBoot.isVisible = true
-        } ?: run {
-            binding.tvVerifiedBoot.isVisible = false
-        }
-
-        binding.btnContinue.isVisible = true
-        binding.btnReset.isVisible = true
+        binding.btnAction.text = "Start Capturing"
+        binding.btnSecondaryAction.isVisible = true
     }
 
     private fun showNotEnrolledUI(state: EnrollUiState) {
-        binding.enrollmentCard.isVisible = false
-        binding.notEnrolledCard.isVisible = true
-        binding.btnContinue.isVisible = false
-        binding.btnReset.isVisible = false
+        binding.enrolledState.isVisible = false
+        binding.notEnrolledState.isVisible = true
+        
+        binding.btnAction.text = "Register Device"
+        binding.btnSecondaryAction.isVisible = false
     }
 
     override fun onDestroyView() {

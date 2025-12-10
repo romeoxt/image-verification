@@ -8,6 +8,8 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <application
         android:name=".PopcApplication"
@@ -20,7 +22,6 @@
         android:requestLegacyExternalStorage="false"
         android:hardwareAccelerated="true"
         android:largeHeap="false"
-        android:allowBatteryOptimization="true"
         android:usesCleartextTraffic="false">
 
         <activity

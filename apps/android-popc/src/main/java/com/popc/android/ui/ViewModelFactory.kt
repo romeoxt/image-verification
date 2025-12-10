@@ -27,7 +27,9 @@ class ViewModelFactory(
                     keystoreManager = ServiceLocator.provideKeystoreManager(context),
                     manifestBuilder = ServiceLocator.provideManifestBuilder(),
                     apiClient = ServiceLocator.provideApiClient(),
-                    enrollmentStore = ServiceLocator.provideEnrollmentStore(context)
+                    enrollmentStore = ServiceLocator.provideEnrollmentStore(context),
+                    locationHelper = ServiceLocator.provideLocationHelper(context),
+                    sensorHelper = ServiceLocator.provideSensorHelper(context)
                 ) as T
             }
             modelClass.isAssignableFrom(EvidenceViewModel::class.java) -> {

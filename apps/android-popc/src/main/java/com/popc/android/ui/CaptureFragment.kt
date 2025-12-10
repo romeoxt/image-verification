@@ -55,6 +55,7 @@ class CaptureFragment : Fragment() {
     ) { permissions ->
         val cameraGranted = permissions[Manifest.permission.CAMERA] ?: false
         val audioGranted = permissions[Manifest.permission.RECORD_AUDIO] ?: false
+        val locationGranted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] ?: false
         
         if (cameraGranted) {
             startCamera()
@@ -64,6 +65,10 @@ class CaptureFragment : Fragment() {
         
         if (!audioGranted && isVideoMode) {
              showToast("Audio permission is recommended for video")
+        }
+
+        if (!locationGranted) {
+            showToast("Location permission is recommended for proof of location")
         }
     }
 
@@ -83,7 +88,7 @@ class CaptureFragment : Fragment() {
 
         setupObservers()
         setupClickListeners()
-        checkCameraPermission()
+        checkPermissions()
     }
 
     private fun setupObservers() {
@@ -105,46 +110,26 @@ class CaptureFragment : Fragment() {
             }
         }
 
-        binding.toggleMode.addOnButtonCheckedListener { _, checkedId, isChecked ->
-            if (isChecked) {
-                when (checkedId) {
-                    R.id.btn_mode_photo -> {
-                        isVideoMode = false
-                        binding.btnCapture.text = getString(R.string.btn_capture)
-                        binding.btnCapture.setIconResource(android.R.drawable.ic_menu_camera)
-                        startCamera() // Rebind for photo
-                    }
-                    R.id.btn_mode_video -> {
-                        isVideoMode = true
-                        binding.btnCapture.text = getString(R.string.btn_record)
-                        binding.btnCapture.setIconResource(android.R.drawable.ic_media_play)
-                        checkAudioPermission()
-                        startCamera() // Rebind for video
-                    }
-                }
-            }
-        }
-
         binding.btnSignVerify.setOnClickListener {
             viewModel.signAndVerify(requireContext())
         }
-
-        binding.btnViewEvidence.setOnClickListener {
-            val verificationId = viewModel.state.value.verificationId
-            if (verificationId != null) {
-                val action = CaptureFragmentDirections.actionCaptureToEvidence(verificationId)
-                findNavController().navigate(action)
-            }
-        }
     }
 
-    private fun checkCameraPermission() {
-        val permissions = mutableListOf(Manifest.permission.CAMERA)
+    private fun checkPermissions() {
+        val permissions = mutableListOf(
+            Manifest.permission.CAMERA,
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        )
         // Request audio permission upfront if we might need it, or just wait until mode switch
         
         if (ContextCompat.checkSelfPermission(
                 requireContext(),
                 Manifest.permission.CAMERA
+            ) == PackageManager.PERMISSION_GRANTED &&
+            ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION
             ) == PackageManager.PERMISSION_GRANTED
         ) {
             startCamera()
@@ -239,7 +224,8 @@ class CaptureFragment : Fragment() {
                     Timber.i("Photo saved: ${photoFile.absolutePath}")
                     requireActivity().runOnUiThread {
                         viewModel.onCaptured(photoFile.absolutePath)
-                        showToast("Photo captured")
+                        // showToast("Photo captured") // Removed toast to reduce noise
+                        binding.btnSignVerify.isEnabled = true
                     }
                 }
             }
@@ -280,9 +266,9 @@ class CaptureFragment : Fragment() {
         recording = pendingRecording.start(ContextCompat.getMainExecutor(requireContext())) { recordEvent ->
             when(recordEvent) {
                 is VideoRecordEvent.Start -> {
-                    binding.btnCapture.text = getString(R.string.btn_stop_recording)
-                    binding.btnCapture.setIconResource(android.R.drawable.ic_media_pause)
-                    binding.toggleMode.isEnabled = false
+                    // binding.btnCapture.text = getString(R.string.btn_stop_recording) // Removed text update
+                    binding.btnCapture.setImageResource(android.R.drawable.ic_media_pause)
+                    // binding.toggleMode.isEnabled = false // Removed toggle mode
                 }
                 is VideoRecordEvent.Finalize -> {
                     if (!recordEvent.hasError()) {
@@ -296,9 +282,9 @@ class CaptureFragment : Fragment() {
                         Timber.e("Video capture ends with error: ${recordEvent.error}")
                         showToast("Video capture failed")
                     }
-                    binding.btnCapture.text = getString(R.string.btn_record)
-                    binding.btnCapture.setIconResource(android.R.drawable.ic_media_play)
-                    binding.toggleMode.isEnabled = true
+                    // binding.btnCapture.text = getString(R.string.btn_record)
+                    binding.btnCapture.setImageResource(android.R.drawable.ic_menu_camera) // Revert to camera icon for now
+                    // binding.toggleMode.isEnabled = true
                     recording = null
                 }
             }
@@ -306,70 +292,46 @@ class CaptureFragment : Fragment() {
     }
 
     private fun updateUI(state: CaptureUiState) {
-        binding.progress.isVisible = state.loading
+        // Loading State
+        binding.loadingContainer.isVisible = state.loading
+        binding.actionsContainer.isVisible = !state.loading
 
-        // Enable sign/verify button only when image is captured
+        // Enable sign/verify button only when image is captured and not loading
         binding.btnSignVerify.isEnabled = !state.loading && state.sha256 != null
-
-        // Show file info
-        state.capturedPath?.let {
-            binding.txtFile.text = "File: ${File(it).name}"
-            binding.txtFile.isVisible = true
-        } ?: run {
-            binding.txtFile.isVisible = false
-        }
-
-        // Show hash
-        state.sha256?.let {
-            binding.txtSha.text = "Hash: ${it.shortenHash()}"
-            binding.txtSha.isVisible = true
-        } ?: run {
-            binding.txtSha.isVisible = false
-        }
-
+        
         // Show verification result
-        if (state.verdict != null && state.mode != null) {
+        if (state.verdict != null) {
             binding.resultCard.isVisible = true
 
-            val verdictText = "${state.verdict.uppercase()} (${state.mode})"
-            binding.txtVerdict.text = verdictText
-
-            // Color code verdict - background and text
-            val bgColor = when (state.verdict.lowercase()) {
-                "verified" -> ContextCompat.getColor(requireContext(), R.color.success_light)
-                "tampered", "invalid", "revoked" -> ContextCompat.getColor(requireContext(), R.color.error_light)
-                "unsigned" -> ContextCompat.getColor(requireContext(), R.color.warning_light)
-                else -> ContextCompat.getColor(requireContext(), R.color.neutral_light)
-            }
-            binding.resultCard.setCardBackgroundColor(bgColor)
+            val isVerified = state.verdict.lowercase() == "verified"
             
-            // Set verdict text color (bold and readable)
-            val textColor = when (state.verdict.lowercase()) {
-                "verified" -> ContextCompat.getColor(requireContext(), R.color.success)
-                "tampered", "invalid", "revoked" -> ContextCompat.getColor(requireContext(), R.color.error)
-                "unsigned" -> ContextCompat.getColor(requireContext(), R.color.warning)
-                else -> ContextCompat.getColor(requireContext(), R.color.neutral)
-            }
-            binding.txtVerdict.setTextColor(textColor)
+            // Verdict Text
+            binding.txtVerdict.text = if (isVerified) "Verified Authentic" else "Verification Failed"
+            
+            // Icon
+            binding.imgVerdictIcon.setImageResource(
+                if (isVerified) android.R.drawable.ic_lock_idle_lock else android.R.drawable.ic_delete
+            )
+            val iconColor = if (isVerified) R.color.success else R.color.error
+            binding.imgVerdictIcon.setColorFilter(
+                ContextCompat.getColor(requireContext(), iconColor)
+            )
 
-            // Show confidence if present
+            // Confidence
             state.confidence?.let {
-                binding.txtConfidence.text = "Confidence: $it/100"
+                binding.txtConfidence.text = "$it% Confidence"
                 binding.txtConfidence.isVisible = true
             } ?: run {
                 binding.txtConfidence.isVisible = false
             }
 
-            // Show reasons
+            // Reasons
             if (state.reasons.isNotEmpty()) {
-                binding.txtReasons.text = "Reasons:\n${state.reasons.joinToString("\n• ", "• ")}"
+                binding.txtReasons.text = state.reasons.joinToString("\n• ", "• ")
                 binding.txtReasons.isVisible = true
             } else {
                 binding.txtReasons.isVisible = false
             }
-
-            // Show evidence button
-            binding.btnViewEvidence.isVisible = state.verificationId != null
 
         } else {
             binding.resultCard.isVisible = false
@@ -383,21 +345,17 @@ class CaptureFragment : Fragment() {
 
     override fun onPause() {
         super.onPause()
-        // Release camera when fragment is paused to save battery
-        // This is critical for battery optimization
         cameraProvider?.unbindAll()
         Timber.d("Camera released (onPause) - saving battery")
     }
 
     override fun onResume() {
         super.onResume()
-        // Restart camera when fragment resumes ONLY if we had permission before
-        // Don't restart camera unnecessarily
         if (ContextCompat.checkSelfPermission(
                 requireContext(),
                 Manifest.permission.CAMERA
             ) == PackageManager.PERMISSION_GRANTED && 
-            cameraProvider != null  // Only restart if camera was previously initialized
+            cameraProvider != null
         ) {
             startCamera()
             Timber.d("Camera restarted (onResume)")
@@ -406,25 +364,14 @@ class CaptureFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        
-        // Stop any ongoing recording
         recording?.stop()
         recording = null
-        
-        // Unbind all camera use cases
         cameraProvider?.unbindAll()
         cameraProvider = null
-        
-        // Release camera references
         imageCapture = null
         videoCapture = null
-        
-        // Shutdown executor
         cameraExecutor.shutdown()
-        
-        // Clear binding
         _binding = null
-        
         Timber.d("Camera resources released")
     }
 }
