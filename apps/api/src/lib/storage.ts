@@ -1,7 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { randomUUID } from 'crypto';
-import { FastifyRequest } from 'fastify';
 
 // Configuration
 const STORAGE_DIR = process.env.STORAGE_DIR || './uploads';
