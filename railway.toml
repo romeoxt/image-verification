@@ -2,18 +2,20 @@
 builder = "nixpacks"
 
 [deploy]
-startCommand = "npm start"
-healthcheckPath = "/health"
-healthcheckTimeout = 100
+healthcheckTimeout = 300
 restartPolicyType = "on_failure"
 
+# Service 1: API (Backend)
 [[services]]
 name = "api"
 root = "apps/api"
-startCommand = "npm start"
+startCommand = "npm install && npm run build && npm start"
+healthcheckPath = "/health"
 
+# Service 2: Dashboard (Frontend)
 [[services]]
 name = "dashboard"
 root = "apps/dashboard"
-startCommand = "npm start"
+startCommand = "npm install && npm run build && npm start"
+healthcheckPath = "/" 
 
