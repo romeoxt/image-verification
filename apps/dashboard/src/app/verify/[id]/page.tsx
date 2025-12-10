@@ -38,6 +38,13 @@ interface VerificationData {
   signatureValid?: boolean;
   chainValid?: boolean;
   contentBinding?: boolean;
+  metadata?: {
+    storageUrl?: string;
+    format?: string;
+    location?: any;
+    sensors?: any;
+    motion_label?: string;
+  };
 }
 
 export default function VerificationResultPage() {
@@ -200,6 +207,26 @@ export default function VerificationResultPage() {
                   Mode: {data.mode}
                 </p>
               )}
+              
+              {/* Display Asset if available */}
+              {data.metadata?.storageUrl && (
+                <div className="my-6 max-w-md mx-auto rounded-lg overflow-hidden border-2 border-white/50 shadow-lg">
+                  {data.metadata.format === 'video/mp4' ? (
+                    <video 
+                      src={data.metadata.storageUrl} 
+                      controls 
+                      className="w-full h-auto"
+                    />
+                  ) : (
+                    <img 
+                      src={data.metadata.storageUrl} 
+                      alt="Verified Asset" 
+                      className="w-full h-auto"
+                    />
+                  )}
+                </div>
+              )}
+
               <div className="flex items-center justify-center gap-2 text-2xl font-semibold">
                 <span>Confidence:</span>
                 <span className={verdictConfig.color}>{data.confidence}/100</span>

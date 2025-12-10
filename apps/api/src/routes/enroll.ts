@@ -148,21 +148,40 @@ export const enrollRoutes: FastifyPluginAsync = async (fastify) => {
         
         fastify.log.info(`Final actualSecurityLevel: ${actualSecurityLevel}`);
 
-        // Reject software-backed keys (Production Requirement)
+        // Production Security: REJECT software-backed keys
+        // Only allow hardware-backed keys (StrongBox/TEE) for cryptographic integrity
+        const isProduction = process.env.NODE_ENV === 'production';
+        const allowSoftwareKeysForTesting = process.env.ALLOW_SOFTWARE_KEYS === 'true';
+        
         if (actualSecurityLevel === 'software') {
-          // Allow software ONLY if environment variable ALLOW_SOFTWARE_KEYS is set (for testing)
-          if (process.env.ALLOW_SOFTWARE_KEYS !== 'true') {
-             return reply.code(400).send({
-               error: 'insecure_device',
-               errors: ['software_key_not_allowed'],
-               message: 'Device does not support hardware-backed security (StrongBox/TEE required)',
-             });
+          // In production, ALWAYS reject software keys (even if ALLOW_SOFTWARE_KEYS is set)
+          if (isProduction) {
+            fastify.log.warn({ deviceId }, 'Rejected software key in production');
+            return reply.code(400).send({
+              error: 'insecure_device',
+              errors: ['software_key_not_allowed'],
+              message: 'Production environment requires hardware-backed security (StrongBox/TEE). Software keys are not accepted.',
+            });
           }
-          warnings.push('Software-backed key detected (hardware-backed preferred)');
+          
+          // In development, only allow if explicitly enabled
+          if (!allowSoftwareKeysForTesting) {
+            fastify.log.warn({ deviceId }, 'Rejected software key (ALLOW_SOFTWARE_KEYS not set)');
+            return reply.code(400).send({
+              error: 'insecure_device',
+              errors: ['software_key_not_allowed'],
+              message: 'Device does not support hardware-backed security (StrongBox/TEE required). Set ALLOW_SOFTWARE_KEYS=true in development only.',
+            });
+          }
+          
+          fastify.log.warn({ deviceId }, 'Allowing software key in development (ALLOW_SOFTWARE_KEYS=true)');
+          warnings.push('SOFTWARE KEY DETECTED - Development only, not production-ready');
         } else if (actualSecurityLevel === 'tee') {
-          warnings.push('TEE level detected (StrongBox preferred for highest security)');
+          // TEE is acceptable, but StrongBox is preferred
+          fastify.log.info({ deviceId }, 'Enrolled with TEE security level');
         } else if (actualSecurityLevel === 'strongbox') {
-          // StrongBox is the best - no warning
+          // StrongBox is the highest security level
+          fastify.log.info({ deviceId }, 'Enrolled with StrongBox security level');
         }
 
         if (attestationResult.verifiedBootState && attestationResult.verifiedBootState !== 'VERIFIED') {

@@ -6,6 +6,7 @@ import * as c2pa from '@popc/c2pa';
 import { query, queryOne, type Policy } from '../lib/db.js';
 import { sha256, generateVerificationId } from '../lib/crypto.js';
 import { analyzeAsset } from '../lib/heuristics.js';
+import { saveFile } from '../lib/storage.js'; // Added storage import
 import type { VerifyRequestJson, VerifyResponse } from '../types/index.js';
 
 export async function verifyRoutes(fastify: FastifyInstance) {
@@ -173,7 +174,53 @@ export async function verifyRoutes(fastify: FastifyInstance) {
         } satisfies VerifyResponse);
       }
 
-      // Step 4: Check device revocation status
+      // Step 4: Replay Protection - Check sequence number
+      // Verify that sequence numbers are monotonically increasing to prevent replay attacks
+      let sequenceNumber: number | null = null;
+      if (manifest.deviceId && manifest.metadata?.sequenceNumber !== undefined) {
+        sequenceNumber = Number(manifest.metadata.sequenceNumber);
+        
+        const device = await queryOne<{ photo_sequence: number; revoked_at: Date | null }>(
+          'SELECT photo_sequence, revoked_at FROM devices WHERE id = $1',
+          [manifest.deviceId]
+        );
+
+        if (device) {
+          // Check if sequence number is valid (must be greater than current)
+          if (sequenceNumber <= device.photo_sequence) {
+            fastify.log.warn({
+              deviceId: manifest.deviceId,
+              receivedSequence: sequenceNumber,
+              expectedMinimum: device.photo_sequence + 1,
+            }, 'Replay attack detected: sequence number out of order');
+
+            const verificationId = await recordVerification({
+              assetSha256,
+              verdict: 'invalid',
+              reasons: ['Replay attack detected', `Sequence number ${sequenceNumber} is not greater than device sequence ${device.photo_sequence}`],
+              deviceId: manifest.deviceId,
+              policyId: null,
+              assetSizeBytes: assetBytes.length,
+              sequenceNumber,
+            });
+
+            return reply.code(200).send({
+              verificationId,
+              mode: 'certified',
+              verdict: 'invalid',
+              assetSha256,
+              reasons: ['Replay attack detected', 'Sequence number out of order'],
+              metadata: null,
+              evidencePackageUrl: null,
+              verifiedAt: new Date().toISOString(),
+            } satisfies VerifyResponse);
+          }
+
+          // Sequence is valid, will update photo_sequence after successful verification
+        }
+      }
+
+      // Step 5: Check device revocation status
       // We check if the device ID in the manifest is active (not revoked)
       let isDeviceRevoked = false;
       if (manifest.deviceId) {
@@ -230,8 +277,19 @@ export async function verifyRoutes(fastify: FastifyInstance) {
         reasons.push('Hardware attestation present');
       }
 
-      // Step 5: Insert verification record
+      // Step 6: Insert verification record
       const capturedAtDate = manifest.capturedAt ? new Date(manifest.capturedAt) : null;
+
+      // Extract full assertions/metadata for AI training (sensors, location)
+      const assertionsMetadata = manifest.assertions || manifest.metadata || {};
+
+      // Save asset to storage (Railway Volume)
+      // This allows the dashboard to display the verified image/video
+      const assetMimeType = assetBytes.length > 12 && assetBytes[4] === 0x66 ? 'video/mp4' : 'image/jpeg';
+      const savedFile = await saveFile(assetBytes, `asset_${Date.now()}`, assetMimeType);
+      
+      // Add storage URL to metadata
+      assertionsMetadata.storageUrl = savedFile.url;
 
       const verificationId = await recordVerification({
         assetSha256,
@@ -242,6 +300,8 @@ export async function verifyRoutes(fastify: FastifyInstance) {
         assetSizeBytes: assetBytes.length,
         capturedAt: capturedAtDate,
         signatureAlgorithm: manifest.signature.algorithm,
+        sequenceNumber: sequenceNumber,
+        metadata: assertionsMetadata, // Now includes storageUrl
       });
 
       // Build metadata
@@ -382,9 +442,8 @@ async function fetchUrl(url: string): Promise<Buffer> {
     const arrayBuffer = await response.arrayBuffer();
     return Buffer.from(arrayBuffer);
   } catch (error) {
-    // Log the error for debugging but don't expose internal details
-    console.error('Fetch error for URL:', url, 'Error:', (error as Error).message);
-    throw new Error(`Unable to fetch image from URL. This may be due to network restrictions or invalid URL.`);
+    // Error will be logged by the caller
+    throw new Error(`Unable to fetch image from URL: ${(error as Error).message}`);
   }
 }
 
@@ -401,6 +460,8 @@ async function recordVerification(data: {
   assetMimeType?: string;
   capturedAt?: Date | null;
   signatureAlgorithm?: string;
+  sequenceNumber?: number | null;
+  metadata?: any; // New field for JSONB
 }): Promise<string> {
   const verificationId = generateVerificationId();
 
@@ -415,8 +476,10 @@ async function recordVerification(data: {
       asset_size_bytes,
       asset_mime_type,
       captured_at,
-      signature_algorithm
-    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+      signature_algorithm,
+      sequence_number,
+      metadata -- Added metadata column
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
     [
       verificationId,
       data.assetSha256,
@@ -428,8 +491,18 @@ async function recordVerification(data: {
       data.assetMimeType || 'image/jpeg',
       data.capturedAt || null,
       data.signatureAlgorithm || null,
+      data.sequenceNumber || null,
+      data.metadata ? JSON.stringify(data.metadata) : null, // Store metadata as JSON
     ]
   );
+
+  // If verification is successful and has sequence number, update device counter
+  if (data.verdict === 'verified' && data.deviceId && data.sequenceNumber !== undefined && data.sequenceNumber !== null) {
+    await query(
+      `UPDATE devices SET photo_sequence = $1, updated_at = NOW() WHERE id = $2`,
+      [data.sequenceNumber, data.deviceId]
+    );
+  }
 
   return verificationId;
 }

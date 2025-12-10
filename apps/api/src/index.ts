@@ -13,6 +13,7 @@ import { initDb, closeDb, getDb } from './lib/db.js';
 import { verifyRoutes } from './routes/verify.js';
 import { evidenceRoutes } from './routes/evidence.js';
 import { enrollRoutes } from './routes/enroll.js';
+import { assetRoutes } from './routes/assets.js'; // Added asset routes
 import { authenticateApiKey, type AuthenticatedRequest } from './lib/auth.js';
 import { securityHeaders } from './lib/security.js';
 import type { Config } from './types/index.js';
@@ -153,6 +154,9 @@ async function registerRoutes() {
 
   // Enrollment routes
   await fastify.register(enrollRoutes);
+
+  // Asset routes
+  await fastify.register(assetRoutes);
 
   // Stub routes
 
