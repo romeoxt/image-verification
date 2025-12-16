@@ -1,8 +1,6 @@
-import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import { FastifyInstance } from 'fastify';
 import path from 'path';
 import fs from 'fs';
-import { authenticateApiKey } from '../lib/auth.js';
-import { getDb } from '../lib/db.js';
 
 const STORAGE_DIR = process.env.STORAGE_DIR || './uploads';
 

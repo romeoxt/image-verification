@@ -2,6 +2,8 @@ import { queryMany, type Verification } from "@/lib/db";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
+export const dynamic = 'force-dynamic';
+
 function VerdictBadge({ verdict }: { verdict: string }) {
   const styles = {
     verified: "bg-green-100 text-green-800 border-green-200",
