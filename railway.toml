@@ -1,19 +1,25 @@
 [build]
-builder = "nixpacks"
+builder = "NIXPACKS"
 
 [deploy]
-startCommand = "npm start"
-healthcheckPath = "/health"
-healthcheckTimeout = 100
-restartPolicyType = "on_failure"
+restartPolicyType = "ON_FAILURE"
 
+# Service 1: API (Backend)
+# Uses root context to access shared packages
 [[services]]
 name = "api"
-root = "apps/api"
-startCommand = "npm start"
+root = "."
+# Build c2pa package first, then API
+buildCommand = "npm install && npm run build --workspace=@popc/c2pa && npm run build --workspace=@popc/api"
+startCommand = "npm run start --workspace=@popc/api"
+healthcheckPath = "/health"
 
+# Service 2: Dashboard (Frontend)
+# Uses dashboard context for isolation
 [[services]]
 name = "dashboard"
 root = "apps/dashboard"
+# Standard Next.js build
+buildCommand = "npm install && npm run build"
 startCommand = "npm start"
-
+healthcheckPath = "/"
