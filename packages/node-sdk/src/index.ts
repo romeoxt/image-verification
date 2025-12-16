@@ -130,7 +130,7 @@ export class PoPC {
     });
 
     if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
+      const error: any = await response.json().catch(() => ({}));
       throw new PopcError(
         error.error || 'Verification failed',
         response.status,
@@ -138,7 +138,7 @@ export class PoPC {
       );
     }
 
-    return await response.json();
+    return await response.json() as VerificationResult;
   }
 
   /**
@@ -187,7 +187,7 @@ export class PoPC {
     });
 
     if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
+      const error: any = await response.json().catch(() => ({}));
       throw new PopcError(
         error.error || 'Failed to get evidence',
         response.status,
@@ -211,7 +211,7 @@ export class PoPC {
     });
 
     if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
+      const error: any = await response.json().catch(() => ({}));
       throw new PopcError(
         error.error || 'Failed to list devices',
         response.status,
@@ -219,7 +219,7 @@ export class PoPC {
       );
     }
 
-    const data = await response.json();
+    const data: any = await response.json();
     return data.devices || [];
   }
 
@@ -237,7 +237,7 @@ export class PoPC {
     });
 
     if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
+      const error: any = await response.json().catch(() => ({}));
       throw new PopcError(
         error.error || 'Failed to revoke device',
         response.status,
@@ -257,7 +257,7 @@ export class PoPC {
     });
 
     if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
+      const error: any = await response.json().catch(() => ({}));
       throw new PopcError(
         error.error || 'Failed to get key info',
         response.status,
@@ -265,7 +265,7 @@ export class PoPC {
       );
     }
 
-    return await response.json();
+    return await response.json() as ApiKeyInfo;
   }
 }
 
