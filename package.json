@@ -8,6 +8,7 @@
     "packages/*"
   ],
   "scripts": {
+    "start": "npm run start --workspace=@popc/api",
     "dev": "npm run dev --workspace=@popc/api",
     "build": "npm run build --workspaces",
     "test": "npm test --workspaces",
