@@ -10,7 +10,7 @@
   "scripts": {
     "start": "npm run start --workspace=@popc/api",
     "dev": "npm run dev --workspace=@popc/api",
-    "build": "npm run build --workspaces",
+    "build": "npm run build --workspace=@popc/c2pa && npm run build --workspaces",
     "test": "npm test --workspaces",
     "docker:up": "docker compose up --build",
     "docker:down": "docker compose down",
