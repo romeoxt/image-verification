@@ -82,6 +82,7 @@ export interface Device {
   manufacturer: string | null;
   model: string | null;
   os_version: string | null;
+  security_level: string | null;
 }
 
 export interface Verification {
