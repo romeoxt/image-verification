@@ -361,15 +361,17 @@ function extractContentBinding(manifest: C2PAManifest): C2PAContentBinding {
   }
 
   // Fallback: look in claims
-  for (const claim of manifest.claims) {
-    for (const assertion of claim.assertions) {
-      if (assertion.label === 'c2pa.hash.data') {
-        const data = assertion.data as any;
-        if (data && data.hash) {
-          return {
-            algorithm: data.algorithm || 'sha256',
-            hash: data.hash,
-          };
+  if (manifest.claims && Array.isArray(manifest.claims)) {
+    for (const claim of manifest.claims) {
+      for (const assertion of claim.assertions) {
+        if (assertion.label === 'c2pa.hash.data') {
+          const data = assertion.data as any;
+          if (data && data.hash) {
+            return {
+              algorithm: data.algorithm || 'sha256',
+              hash: data.hash,
+            };
+          }
         }
       }
     }
