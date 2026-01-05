@@ -20,7 +20,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         buildConfigField("String", "BASE_URL", "\"https://image-verification-production.up.railway.app\"")
-        buildConfigField("String", "API_KEY", "\"pk_a00a94a9cc00156a194564a02038ac8c79888712290c5301767e654c7652affa\"")
+        buildConfigField("String", "API_KEY", "\"pk_your_api_key_here\"")
     }
 
     buildTypes {
