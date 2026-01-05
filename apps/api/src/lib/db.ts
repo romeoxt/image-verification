@@ -22,14 +22,17 @@ export function initDb(config: DbConfig): pg.Pool {
     return pool;
   }
 
-  const isProduction = process.env.NODE_ENV === 'production' || config.connectionString.includes('railway');
+  // Force SSL for Railway or any remote connection (detected by non-localhost host)
+  const isRemote = config.connectionString.includes('railway') || 
+                   !config.connectionString.includes('localhost') && 
+                   !config.connectionString.includes('127.0.0.1');
 
   pool = new Pool({
     connectionString: config.connectionString,
     max: config.max ?? 20,
     idleTimeoutMillis: config.idleTimeoutMillis ?? 30000,
     connectionTimeoutMillis: config.connectionTimeoutMillis ?? 5000,
-    ssl: isProduction ? { rejectUnauthorized: false } : undefined,
+    ssl: isRemote ? { rejectUnauthorized: false } : undefined,
   });
 
   pool.on('error', (err) => {
