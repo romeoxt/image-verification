@@ -22,11 +22,14 @@ export function initDb(config: DbConfig): pg.Pool {
     return pool;
   }
 
+  const isProduction = process.env.NODE_ENV === 'production' || config.connectionString.includes('railway');
+
   pool = new Pool({
     connectionString: config.connectionString,
     max: config.max ?? 20,
     idleTimeoutMillis: config.idleTimeoutMillis ?? 30000,
     connectionTimeoutMillis: config.connectionTimeoutMillis ?? 5000,
+    ssl: isProduction ? { rejectUnauthorized: false } : undefined,
   });
 
   pool.on('error', (err) => {
