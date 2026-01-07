@@ -4,6 +4,7 @@ import { TabsSection } from "@/components/landing/tabs-section";
 import { HeroSection } from "@/components/landing/hero-section";
 import { SiteHeader } from "@/components/landing/site-header";
 import { SiteFooter } from "@/components/landing/site-footer";
+import { TracksSection } from "@/components/landing/tracks-section";
 
 export default function LandingPage() {
   return (
@@ -38,39 +39,7 @@ export default function LandingPage() {
             </div>
           </div>
 
-          <section className="track section u-pb-0 bg-[#F8FAF0]">
-            <div className="u-vflex-stretch-top u-vgap-64-24">
-              <div className="w-layout-blockcontainer container w-container mx-auto px-4">
-                <div className="row row-center-horizontal">
-                  <div className="col col-lg-8">
-                    <h2 className="u-align-center text-slate-900 text-4xl font-bold text-center mb-12">
-                      The internet lost its ability to trust images
-                    </h2>
-                  </div>
-                </div>
-              </div>
-              <div className="tracks_container container mx-auto px-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 text-center">
-                  <div className="p-6 bg-white rounded-xl shadow-sm border border-slate-100">
-                    <h3 className="h6 font-bold mb-2">AI is indistinguishable from reality</h3>
-                    <p className="text-slate-500 text-sm">Generative models can fake events perfectly.</p>
-                  </div>
-                  <div className="p-6 bg-white rounded-xl shadow-sm border border-slate-100">
-                    <h3 className="h6 font-bold mb-2">Metadata is worthless</h3>
-                    <p className="text-slate-500 text-sm">EXIF data is easily spoofed by anyone.</p>
-                  </div>
-                  <div className="p-6 bg-white rounded-xl shadow-sm border border-slate-100">
-                    <h3 className="h6 font-bold mb-2">Tribal knowledge isn't enough</h3>
-                    <p className="text-slate-500 text-sm">You can't rely on "knowing" the source anymore.</p>
-                  </div>
-                  <div className="p-6 bg-white rounded-xl shadow-sm border border-slate-100">
-                    <h3 className="h6 font-bold mb-2">Broken trust</h3>
-                    <p className="text-slate-500 text-sm">Courts and insurers are rejecting digital evidence.</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
+          <TracksSection />
 
           <TabsSection />
 
