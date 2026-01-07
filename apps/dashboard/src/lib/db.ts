@@ -95,6 +95,7 @@ export interface Verification {
   asset_size_bytes: number | null;
   captured_at: Date | null;
   created_at: Date;
-  mode: string | null; // Added field to support recent updates
+  mode: string | null;
+  asset_mime_type: string | null;
 }
 
