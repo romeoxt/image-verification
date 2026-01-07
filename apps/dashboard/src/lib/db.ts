@@ -97,6 +97,7 @@ export interface Verification {
   created_at: Date;
   mode: string | null;
   asset_mime_type: string | null;
+  metadata: any;
 }
 
 export interface ApiKey {
