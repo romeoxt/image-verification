@@ -12,7 +12,7 @@ export function TracksSection() {
         duration: 2,
         ease: "easeInOut",
         repeat: Infinity,
-        repeatType: "loop" as const,
+        repeatType: "loop",
         repeatDelay: 1
       },
     },
@@ -27,7 +27,7 @@ export function TracksSection() {
         duration: 0.8,
         ease: "easeOut",
         repeat: Infinity,
-        repeatType: "reverse" as const,
+        repeatType: "reverse",
         repeatDelay: 0.5
       },
     },
