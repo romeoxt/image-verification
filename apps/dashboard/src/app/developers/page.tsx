@@ -29,52 +29,52 @@ export default function DevelopersPage() {
           <section className="section bg-[#F8FAF0]">
             <div className="w-layout-blockcontainer container w-container">
               
-              <div className="grid lg:grid-cols-2 gap-16">
+              <div className="grid lg:grid-cols-2 gap-24">
                 <div>
-                   <h2 className="text-3xl font-bold mb-6">Simple Integration</h2>
-                   <p className="text-lg text-slate-600 mb-8">
+                   <h2 className="text-4xl font-bold mb-8">Simple Integration</h2>
+                   <p className="text-xl text-slate-600 mb-12 leading-relaxed">
                      Our REST API makes it easy to verify assets. Send the file and the manifest, and get back a verdict instantly.
                    </p>
                    
-                   <div className="space-y-6">
-                      <div className="flex gap-4">
-                         <div className="bg-white p-3 rounded-lg shadow-sm h-fit">
-                            <Terminal className="w-6 h-6 text-slate-900" />
+                   <div className="space-y-8">
+                      <div className="flex gap-6">
+                         <div className="bg-white p-4 rounded-xl shadow-sm h-fit border border-slate-100">
+                            <Terminal className="w-8 h-8 text-slate-900" />
                          </div>
                          <div>
-                            <h3 className="text-xl font-bold">Standard REST API</h3>
-                            <p className="text-slate-500">Works with any language or framework.</p>
+                            <h3 className="text-2xl font-bold mb-2">Standard REST API</h3>
+                            <p className="text-lg text-slate-500 leading-relaxed">Works with any language or framework.</p>
                          </div>
                       </div>
-                      <div className="flex gap-4">
-                         <div className="bg-white p-3 rounded-lg shadow-sm h-fit">
-                            <Code className="w-6 h-6 text-slate-900" />
+                      <div className="flex gap-6">
+                         <div className="bg-white p-4 rounded-xl shadow-sm h-fit border border-slate-100">
+                            <Code className="w-8 h-8 text-slate-900" />
                          </div>
                          <div>
-                            <h3 className="text-xl font-bold">Mobile SDKs</h3>
-                            <p className="text-slate-500">Native Android and iOS libraries for secure capture.</p>
+                            <h3 className="text-2xl font-bold mb-2">Mobile SDKs</h3>
+                            <p className="text-lg text-slate-500 leading-relaxed">Native Android and iOS libraries for secure capture.</p>
                          </div>
                       </div>
-                      <div className="flex gap-4">
-                         <div className="bg-white p-3 rounded-lg shadow-sm h-fit">
-                            <Github className="w-6 h-6 text-slate-900" />
+                      <div className="flex gap-6">
+                         <div className="bg-white p-4 rounded-xl shadow-sm h-fit border border-slate-100">
+                            <Github className="w-8 h-8 text-slate-900" />
                          </div>
                          <div>
-                            <h3 className="text-xl font-bold">Open Source</h3>
-                            <p className="text-slate-500">Inspect the core logic on GitHub.</p>
+                            <h3 className="text-2xl font-bold mb-2">Open Source</h3>
+                            <p className="text-lg text-slate-500 leading-relaxed">Inspect the core logic on GitHub.</p>
                          </div>
                       </div>
                    </div>
 
-                   <div className="mt-12">
-                      <Link href="https://github.com/romeoxt/image-verification" className="inline-flex items-center gap-2 text-emerald-600 font-bold hover:underline">
+                   <div className="mt-16">
+                      <Link href="https://github.com/romeoxt/image-verification" className="inline-flex items-center gap-2 text-emerald-600 font-bold text-xl hover:underline">
                          View Documentation &rarr;
                       </Link>
                    </div>
                 </div>
 
                 {/* Code Sample */}
-                <div className="bg-slate-900 rounded-xl p-6 shadow-2xl overflow-hidden font-mono text-sm">
+                <div className="bg-slate-900 rounded-2xl p-8 shadow-2xl overflow-hidden font-mono text-sm border border-slate-800">
                    <div className="flex items-center gap-2 mb-4 border-b border-slate-800 pb-4">
                       <div className="w-3 h-3 rounded-full bg-red-500"></div>
                       <div className="w-3 h-3 rounded-full bg-yellow-500"></div>

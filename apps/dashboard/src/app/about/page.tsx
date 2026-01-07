@@ -27,28 +27,28 @@ export default function AboutPage() {
 
           <section className="section bg-[#F8FAF0]">
             <div className="w-layout-blockcontainer container w-container max-w-3xl mx-auto">
-               <div className="prose prose-lg prose-slate">
-                  <p className="text-xl leading-relaxed text-slate-600 mb-8">
+               <div className="prose prose-lg prose-slate prose-p:text-xl prose-p:leading-loose">
+                  <p className="mb-12 text-slate-600">
                      The rise of generative AI has created a crisis of confidence. When any image can be synthesized in seconds, the assumption of truth that photography once held is gone.
                   </p>
-                  <p className="text-lg text-slate-600 mb-8">
+                  <p className="mb-12 text-slate-600">
                      PoPC (Proof of Physical Capture) was built to restore that trust. We don't try to detect fakes—a losing battle against rapidly improving AI models. Instead, we prove authenticity.
                   </p>
-                  <p className="text-lg text-slate-600 mb-12">
+                  <p className="mb-16 text-slate-600">
                      By anchoring digital media to physical hardware at the exact moment of capture, we create a chain of custody that cannot be forged.
                   </p>
                </div>
 
-               <div className="border-t border-slate-200 pt-12 mt-12">
-                  <h2 className="text-3xl font-bold mb-8">Contact Us</h2>
-                  <div className="grid md:grid-cols-2 gap-8">
-                     <div>
-                        <h3 className="font-bold text-lg mb-2">General Inquiries</h3>
-                        <a href="mailto:contact@popc.dev" className="text-emerald-600 hover:underline">contact@popc.dev</a>
+               <div className="border-t border-slate-200 pt-16 mt-16">
+                  <h2 className="text-4xl font-bold mb-12">Contact Us</h2>
+                  <div className="grid md:grid-cols-2 gap-12">
+                     <div className="bg-white p-8 rounded-xl shadow-sm border border-slate-100">
+                        <h3 className="font-bold text-2xl mb-4">General Inquiries</h3>
+                        <a href="mailto:contact@popc.dev" className="text-emerald-600 hover:underline text-lg">contact@popc.dev</a>
                      </div>
-                     <div>
-                        <h3 className="font-bold text-lg mb-2">Sales & Partnerships</h3>
-                        <a href="mailto:sales@popc.dev" className="text-emerald-600 hover:underline">sales@popc.dev</a>
+                     <div className="bg-white p-8 rounded-xl shadow-sm border border-slate-100">
+                        <h3 className="font-bold text-2xl mb-4">Sales & Partnerships</h3>
+                        <a href="mailto:sales@popc.dev" className="text-emerald-600 hover:underline text-lg">sales@popc.dev</a>
                      </div>
                   </div>
                </div>
