@@ -295,9 +295,17 @@ export async function verifyRoutes(fastify: FastifyInstance) {
       const assetMimeType = assetBytes.length > 12 && assetBytes[4] === 0x66 ? 'video/mp4' : 'image/jpeg';
       const savedFile = await saveFile(assetBytes, `asset_${Date.now()}`, assetMimeType);
       
-      // Add storage URL to metadata
+      // Add storage URL and filename to metadata
       assertionsMetadata.storageUrl = savedFile.url;
+      assertionsMetadata.assetFilename = savedFile.filename;
 
+      // Save manifest to storage if present (sidecar)
+      if (manifestBytes) {
+        const savedManifest = await saveFile(manifestBytes, `manifest_${Date.now()}`, 'application/c2pa');
+        assertionsMetadata.manifestUrl = savedManifest.url;
+        assertionsMetadata.manifestFilename = savedManifest.filename;
+      }
+      
       const verificationId = await recordVerification({
         assetSha256,
         verdict: 'verified',

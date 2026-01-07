@@ -12,7 +12,8 @@ import {
   MapPin, 
   Hash, 
   FileCode,
-  ArrowLeft
+  ArrowLeft,
+  Download
 } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -117,6 +118,12 @@ export default async function VerificationDetailPage({ params }: { params: { id:
           </p>
         </div>
         <div className="ml-auto flex gap-2">
+           <Button variant="outline" asChild>
+            <a href={`${process.env.NEXT_PUBLIC_API_URL || 'https://image-verification-production.up.railway.app'}/v1/evidence/${verification.id}/download`} download>
+              <Download className="h-4 w-4 mr-2" />
+              Evidence
+            </a>
+           </Button>
            <Button variant="outline" asChild>
             <Link href={`/verify/${verification.id}`} target="_blank">
               View Public Page

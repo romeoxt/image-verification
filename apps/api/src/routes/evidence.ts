@@ -2,7 +2,9 @@
  * /v1/evidence/:verificationId endpoint - Download evidence package
  */
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import archiver from 'archiver';
 import { query, queryOne, type Policy } from '../lib/db.js';
+import { getFile } from '../lib/storage.js';
 
 interface EvidenceParams {
   verificationId: string;
@@ -21,6 +23,7 @@ interface VerificationRow {
   signature_algorithm: string | null;
   captured_at: Date | null;
   created_at: Date;
+  metadata: any;
 }
 
 interface DeviceRow {
@@ -93,7 +96,8 @@ export async function evidenceRoutes(fastify: FastifyInstance) {
           manifest_sha256,
           signature_algorithm,
           captured_at,
-          created_at
+          created_at,
+          metadata
         FROM verifications
         WHERE id = $1`,
         [verificationId]
@@ -314,6 +318,91 @@ export async function evidenceRoutes(fastify: FastifyInstance) {
         error: 'internal_error',
         message: 'An unexpected error occurred while generating evidence package',
       });
+    }
+  });
+
+  /**
+   * GET /v1/evidence/:verificationId/download
+   */
+  fastify.get<{
+    Params: EvidenceParams;
+  }>('/v1/evidence/:verificationId/download', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const { verificationId } = request.params as EvidenceParams;
+
+      // Validate verification ID format (UUID)
+      if (!verificationId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+        return reply.code(400).send({
+          error: 'invalid_verification_id',
+          message: 'Verification ID must be a valid UUID',
+        });
+      }
+
+      // Load verification record
+      const verification = await queryOne<VerificationRow>(
+        `SELECT * FROM verifications WHERE id = $1`,
+        [verificationId]
+      );
+
+      if (!verification) {
+        return reply.code(404).send({
+          error: 'verification_not_found',
+          message: `No verification found with ID: ${verificationId}`,
+        });
+      }
+
+      // Initialize ZIP archive
+      const archive = archiver('zip', {
+        zlib: { level: 9 } // Sets the compression level.
+      });
+
+      // Set headers for download
+      reply.header('Content-Type', 'application/zip');
+      reply.header('Content-Disposition', `attachment; filename="evidence_${verificationId}.zip"`);
+
+      // Pipe archive data to the response
+      reply.send(archive);
+
+      // 1. Add Verification Report (JSON)
+      const report = {
+        verificationId: verification.id,
+        verdict: verification.verdict,
+        assetSha256: verification.asset_sha256,
+        reasons: verification.reasons_json,
+        verifiedAt: verification.created_at,
+        deviceId: verification.device_id,
+        policyId: verification.policy_id,
+        metadata: verification.metadata
+      };
+      archive.append(JSON.stringify(report, null, 2), { name: 'verification_report.json' });
+
+      // 2. Add Asset
+      if (verification.metadata?.assetFilename) {
+        const file = await getFile(verification.metadata.assetFilename);
+        if (file) {
+          archive.append(file.stream, { name: `asset${verification.asset_mime_type === 'video/mp4' ? '.mp4' : '.jpg'}` });
+        }
+      }
+
+      // 3. Add Manifest
+      if (verification.metadata?.manifestFilename) {
+        const file = await getFile(verification.metadata.manifestFilename);
+        if (file) {
+          archive.append(file.stream, { name: 'manifest.c2pa' });
+        }
+      }
+
+      // Finalize the archive (this triggers the stream to end)
+      await archive.finalize();
+
+    } catch (error) {
+      fastify.log.error(error);
+      if (!reply.raw.headersSent) {
+         return reply.code(500).send({
+          error: 'internal_error',
+          message: 'An unexpected error occurred while generating evidence package',
+        });
+      }
     }
   });
 }
