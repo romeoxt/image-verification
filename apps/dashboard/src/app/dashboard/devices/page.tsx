@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { queryMany, type Device } from "@/lib/db";
-import { Smartphone, Shield, AlertTriangle, Trash2 } from 'lucide-react';
+import { Smartphone, Shield, AlertTriangle } from 'lucide-react';
+import { DeviceActions } from "./device-actions";
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
@@ -81,9 +82,7 @@ export default async function DevicesPage() {
                     </span>
                 </td>
                 <td className="p-4 align-middle text-right">
-                    <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20">
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <DeviceActions deviceId={device.id} isRevoked={!!device.revoked_at} />
                 </td>
               </tr>
               ))
