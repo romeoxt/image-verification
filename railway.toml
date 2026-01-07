@@ -15,11 +15,11 @@ startCommand = "npm run start --workspace=@popc/api"
 healthcheckPath = "/health"
 
 # Service 2: Dashboard (Frontend)
-# Uses dashboard context for isolation
+# Uses root context to access shared packages
 [[services]]
 name = "dashboard"
-root = "apps/dashboard"
+root = "."
 # Standard Next.js build
-buildCommand = "npm install && npm run build"
-startCommand = "npm start"
+buildCommand = "npm install && npm run build --workspace=dashboard"
+startCommand = "npm start --workspace=dashboard"
 healthcheckPath = "/"
