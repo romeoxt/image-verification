@@ -50,7 +50,7 @@ class EvidenceViewModel(
                 Timber.e(e, "Failed to fetch evidence")
                 _state.value = _state.value.copy(
                     loading = false,
-                    error = "Failed to fetch evidence: ${e.message}"
+                    error = com.popc.android.utils.ErrorMessageUtils.getFriendlyErrorMessage(e)
                 )
             }
         }

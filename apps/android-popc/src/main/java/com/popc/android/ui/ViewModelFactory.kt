@@ -46,6 +46,12 @@ class ViewModelFactory(
                     enrollmentStore = ServiceLocator.provideEnrollmentStore(context)
                 ) as T
             }
+            modelClass.isAssignableFrom(SettingsViewModel::class.java) -> {
+                SettingsViewModel(
+                    keystoreManager = ServiceLocator.provideKeystoreManager(context),
+                    enrollmentStore = ServiceLocator.provideEnrollmentStore(context)
+                ) as T
+            }
             else -> throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
         }
     }

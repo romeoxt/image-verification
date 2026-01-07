@@ -122,17 +122,11 @@ class EnrollViewModel(
                     warnings = response.warnings
                 )
 
-            } catch (e: EnrollmentException) {
+            } catch (e: Exception) {
                 Timber.e(e, "Enrollment failed")
                 _uiState.value = _uiState.value?.copy(
                     loading = false,
-                    error = "${e.message}\nErrors: ${e.errors.joinToString(", ")}"
-                )
-            } catch (e: Exception) {
-                Timber.e(e, "Enrollment error")
-                _uiState.value = _uiState.value?.copy(
-                    loading = false,
-                    error = "Enrollment failed: ${e.message}"
+                    error = com.popc.android.utils.ErrorMessageUtils.getFriendlyErrorMessage(e)
                 )
             }
         }

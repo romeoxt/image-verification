@@ -45,4 +45,14 @@
             android:defaultValue="@null" />
     </fragment>
 
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="com.popc.android.ui.SettingsFragment"
+        android:label="Settings" />
+
+    <fragment
+        android:id="@+id/aboutFragment"
+        android:name="com.popc.android.ui.AboutFragment"
+        android:label="About" />
+
 </navigation>

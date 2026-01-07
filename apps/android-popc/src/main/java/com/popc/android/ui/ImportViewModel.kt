@@ -67,7 +67,7 @@ class ImportViewModel(
                 Timber.e(e, "Failed to process picked image")
                 _state.value = _state.value.copy(
                     loading = false,
-                    error = "Failed to process image: ${e.message}"
+                    error = com.popc.android.utils.ErrorMessageUtils.getFriendlyErrorMessage(e)
                 )
             }
         }
@@ -113,7 +113,7 @@ class ImportViewModel(
                 Timber.e(e, "Heuristic verification failed")
                 _state.value = _state.value.copy(
                     loading = false,
-                    error = "Verification failed: ${e.message}"
+                    error = com.popc.android.utils.ErrorMessageUtils.getFriendlyErrorMessage(e)
                 )
             }
         }
@@ -231,7 +231,7 @@ class ImportViewModel(
                 Timber.e(e, "Post-signed verification failed")
                 _state.value = _state.value.copy(
                     loading = false,
-                    error = "Verification failed: ${e.message}"
+                    error = com.popc.android.utils.ErrorMessageUtils.getFriendlyErrorMessage(e)
                 )
             }
         }

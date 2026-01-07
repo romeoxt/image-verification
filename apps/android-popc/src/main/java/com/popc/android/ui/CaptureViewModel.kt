@@ -53,7 +53,7 @@ class CaptureViewModel(
             } catch (e: Exception) {
                 Timber.e(e, "Failed to process captured image")
                 _state.value = _state.value.copy(
-                    error = "Failed to process image: ${e.message}"
+                    error = ErrorMessageUtils.getFriendlyErrorMessage(e)
                 )
             }
         }
