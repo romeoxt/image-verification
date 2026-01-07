@@ -7,7 +7,7 @@ declare global {
   var _postgresPool: Pool | undefined;
 }
 
-const connectionString = process.env.DATABASE_URL || "postgresql://postgres:SjHJaHHjmvgjcZDGArTJHrwEBFNhwTPq@postgres.railway.internal:5432/railway";
+const connectionString = process.env.DATABASE_URL;
 
 if (!connectionString) {
   // In development, you might want a fallback, but for security, it's better to fail fast or use a dummy local one
