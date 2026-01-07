@@ -1,343 +1,260 @@
-'use client'
-
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ShieldCheck, Camera, Lock, Terminal, Package, Zap, Check } from "lucide-react";
-import { motion } from "framer-motion";
+import { ShieldCheck, Camera, Lock, Terminal, Activity, FileCheck, AlertTriangle, Scale, Newspaper, Briefcase, Globe } from "lucide-react";
 
 export default function LandingPage() {
   return (
-    <div className="flex flex-col min-h-screen">
-      {/* Header */}
-      <header className="px-4 lg:px-6 h-14 flex items-center border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
-        <Link className="flex items-center justify-center" href="#">
-          <ShieldCheck className="h-6 w-6 mr-2" />
-          <span className="font-bold">PoPC</span>
+    <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-950">
+      {/* 1. Header */}
+      <header className="px-4 lg:px-6 h-16 flex items-center border-b bg-white/80 dark:bg-slate-950/80 backdrop-blur sticky top-0 z-50">
+        <Link className="flex items-center justify-center gap-2" href="#">
+          <ShieldCheck className="h-6 w-6 text-emerald-600" />
+          <span className="font-bold text-xl tracking-tight">PoPC</span>
         </Link>
         <nav className="ml-auto flex gap-4 sm:gap-6 items-center">
-          <Link className="text-sm font-medium hover:underline underline-offset-4" href="#features">
-            Features
+          <Link className="text-sm font-medium hover:text-emerald-600 transition-colors" href="#how-it-works">
+            How It Works
           </Link>
-          <Link className="text-sm font-medium hover:underline underline-offset-4" href="#pricing">
-            Pricing
+          <Link className="text-sm font-medium hover:text-emerald-600 transition-colors" href="#use-cases">
+            Use Cases
           </Link>
-          <Link className="text-sm font-medium hover:underline underline-offset-4" href="https://github.com/romeoxt/image-verification">
+          <Link className="text-sm font-medium hover:text-emerald-600 transition-colors" href="https://github.com/romeoxt/image-verification">
             Docs
           </Link>
-          <Button asChild variant="outline" size="sm">
-            <Link href="/verify">Try Demo</Link>
-          </Button>
-          <Button asChild size="sm">
-            <Link href="/dashboard">Get API Key</Link>
-          </Button>
+          <div className="hidden sm:flex gap-2">
+            <Button asChild variant="ghost" size="sm">
+                <Link href="/dashboard">Log In</Link>
+            </Button>
+            <Button asChild size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white">
+                <Link href="/dashboard">Get Started</Link>
+            </Button>
+          </div>
         </nav>
       </header>
 
       <main className="flex-1">
-        {/* Hero Section - Developer-First */}
-        <section className="w-full py-12 md:py-24 lg:py-32 xl:py-40 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-background">
-          <div className="container px-4 md:px-6 mx-auto">
-            <div className="flex flex-col items-center space-y-6 text-center">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                className="inline-block mb-4 px-4 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold dark:bg-blue-900/30 dark:text-blue-400"
-              >
-                Developer SDK
-              </motion.div>
-              
-              <motion.h1
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.1 }}
-                className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl max-w-4xl"
-              >
-                The easiest way to prove<br />a photo or video is real
-              </motion.h1>
-              
-              <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-                className="mx-auto max-w-[700px] text-gray-600 md:text-xl dark:text-gray-400"
-              >
-                A developer-first SDK built on C2PA, StrongBox, and hardware attestation.<br />
-                Add trusted capture to any app in <span className="font-semibold">minutes</span>, not months.
-              </motion.p>
-
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.3 }}
-                className="flex flex-col sm:flex-row gap-4 mt-4"
-              >
-                <Button asChild size="lg" className="text-lg px-8 py-6">
-                  <Link href="/dashboard">
-                    Get Started Free
-                  </Link>
-                </Button>
-                <Button asChild size="lg" variant="outline" className="text-lg px-8 py-6">
-                  <Link href="/verify">
-                    Try Demo
-                  </Link>
-                </Button>
-              </motion.div>
-
-              {/* Quick Install Code Block */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.4 }}
-                className="mt-8 p-6 bg-gray-900 text-white rounded-lg text-left max-w-2xl w-full shadow-xl"
-              >
-                <div className="flex items-center gap-2 text-sm text-gray-400 mb-3">
-                  <Terminal className="h-4 w-4" />
-                  <span>Quick Start</span>
+        {/* 2. Hero Section */}
+        <section className="w-full py-20 md:py-32 lg:py-40 bg-slate-950 text-white relative overflow-hidden">
+            {/* Background Grid */}
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+            
+            <div className="container px-4 md:px-6 relative z-10">
+                <div className="flex flex-col items-center space-y-8 text-center">
+                    <div className="inline-flex items-center rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-sm font-medium text-emerald-400">
+                        <ShieldCheck className="mr-2 h-4 w-4" /> Trusted Media Verification
+                    </div>
+                    <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl max-w-4xl mx-auto">
+                        Proof that a photo was taken in the <span className="text-emerald-500">real world</span>.
+                    </h1>
+                    <p className="mx-auto max-w-[800px] text-slate-400 md:text-xl leading-relaxed">
+                        PoPC cryptographically verifies that photos and videos were captured by a real device, at a real place and time, and were never altered.
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-4 min-w-[300px] justify-center pt-4">
+                        <Button asChild size="lg" className="bg-emerald-600 hover:bg-emerald-700 h-12 px-8 text-base">
+                            <Link href="/dashboard">Request Demo</Link>
+                        </Button>
+                        <Button asChild variant="outline" size="lg" className="h-12 px-8 text-base border-slate-700 hover:bg-slate-800 hover:text-white text-slate-300">
+                            <Link href="#how-it-works">How It Works</Link>
+                        </Button>
+                    </div>
                 </div>
-                <code className="text-green-400 block mb-3">npm install @popc/node</code>
-                <div className="text-sm text-gray-300 font-mono space-y-1">
-                  <div><span className="text-blue-400">const</span> popc = <span className="text-blue-400">new</span> PoPC(&#123; apiKey: <span className="text-yellow-300">&apos;pk_...&apos;</span> &#125;);</div>
-                  <div><span className="text-blue-400">const</span> result = <span className="text-blue-400">await</span> popc.verify(image, manifest);</div>
-                  <div><span className="text-green-400">// &apos;verified&apos;, &apos;tampered&apos;, or &apos;invalid&apos;</span></div>
-                </div>
-              </motion.div>
             </div>
-          </div>
         </section>
 
-        {/* What Makes Us Different */}
-        <section className="w-full py-12 md:py-24 bg-black text-white">
-          <div className="container px-4 md:px-6 mx-auto text-center">
-            <h2 className="text-3xl font-bold mb-8">Think Stripe, Not Truepic</h2>
-            <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-              <div>
-                <div className="text-4xl mb-4">✓</div>
-                <div className="font-bold mb-2">Self-Serve</div>
-                <div className="text-gray-400 text-sm">Sign up and go. No sales calls.</div>
-              </div>
-              <div>
-                <div className="text-4xl mb-4">⚡</div>
-                <div className="font-bold mb-2">10 Minutes</div>
-                <div className="text-gray-400 text-sm">Not 6 months of custom integration.</div>
-              </div>
-              <div>
-                <div className="text-4xl mb-4">$</div>
-                <div className="font-bold mb-2">$19/month</div>
-                <div className="text-gray-400 text-sm">Not enterprise contracts.</div>
-              </div>
+        {/* 3. The Problem */}
+        <section className="w-full py-20 bg-slate-50 dark:bg-slate-900">
+            <div className="container px-4 md:px-6">
+                <div className="grid gap-12 lg:grid-cols-3">
+                    <div className="flex flex-col items-start space-y-4">
+                        <div className="p-3 bg-red-100 dark:bg-red-900/20 rounded-xl">
+                            <Activity className="h-8 w-8 text-red-600 dark:text-red-400" />
+                        </div>
+                        <h3 className="text-xl font-bold">AI is Indistinguishable</h3>
+                        <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
+                            Generative AI can create photorealistic events that never happened. The human eye can no longer tell the difference.
+                        </p>
+                    </div>
+                    <div className="flex flex-col items-start space-y-4">
+                        <div className="p-3 bg-orange-100 dark:bg-orange-900/20 rounded-xl">
+                            <AlertTriangle className="h-8 w-8 text-orange-600 dark:text-orange-400" />
+                        </div>
+                        <h3 className="text-xl font-bold">Metadata is Worthless</h3>
+                        <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
+                            EXIF data (GPS, time) is easily spoofed. Anyone can edit a file's location to be anywhere on earth.
+                        </p>
+                    </div>
+                    <div className="flex flex-col items-start space-y-4">
+                        <div className="p-3 bg-slate-200 dark:bg-slate-800 rounded-xl">
+                            <FileCheck className="h-8 w-8 text-slate-700 dark:text-slate-300" />
+                        </div>
+                        <h3 className="text-xl font-bold">Trust is Broken</h3>
+                        <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
+                            Courts, insurers, and media platforms have no reliable way to verify digital evidence. PoPC restores that trust.
+                        </p>
+                    </div>
+                </div>
             </div>
-          </div>
         </section>
 
-        {/* Features - Developer Focused */}
-        <section id="features" className="w-full py-12 md:py-24 lg:py-32">
-          <div className="container px-4 md:px-6 mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">Three Core Features</h2>
-              <p className="mt-4 text-gray-500 dark:text-gray-400 md:text-xl">
-                Everything you need. Nothing you don&apos;t.
-              </p>
-            </div>
-            <div className="grid gap-8 md:grid-cols-3">
-              <div className="flex flex-col items-start space-y-4 p-8 bg-white dark:bg-gray-800 rounded-xl shadow-sm border hover:shadow-md transition-shadow">
-                <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                  <Camera className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+        {/* 4. How It Works */}
+        <section id="how-it-works" className="w-full py-20 md:py-32 bg-white dark:bg-slate-950">
+            <div className="container px-4 md:px-6">
+                <div className="flex flex-col items-center justify-center space-y-4 text-center mb-16">
+                    <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">How PoPC Works</h2>
+                    <p className="max-w-[700px] text-slate-500 dark:text-slate-400 md:text-xl">
+                        A chain of custody from the camera sensor to the final verification.
+                    </p>
                 </div>
-                <h3 className="text-2xl font-bold">1. Capture & Sign</h3>
-                <p className="text-gray-600 dark:text-gray-400">
-                  Hardware-backed signing with StrongBox/TEE. C2PA manifest packaging. Device attestation.
+
+                <div className="grid gap-8 md:grid-cols-4 relative">
+                     {/* Connecting Line (Desktop) */}
+                    <div className="hidden md:block absolute top-12 left-[12%] right-[12%] h-0.5 bg-slate-200 dark:bg-slate-800 -z-10"></div>
+
+                    <div className="flex flex-col items-center text-center space-y-4 bg-white dark:bg-slate-950 p-4">
+                        <div className="h-24 w-24 rounded-full bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center border-4 border-white dark:border-slate-950">
+                            <Camera className="h-10 w-10 text-emerald-600 dark:text-emerald-400" />
+                        </div>
+                        <h3 className="text-xl font-bold">1. Capture</h3>
+                        <p className="text-sm text-slate-500">Secure camera app captures photo/video directly from hardware.</p>
+                    </div>
+
+                    <div className="flex flex-col items-center text-center space-y-4 bg-white dark:bg-slate-950 p-4">
+                        <div className="h-24 w-24 rounded-full bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center border-4 border-white dark:border-slate-950">
+                            <Lock className="h-10 w-10 text-emerald-600 dark:text-emerald-400" />
+                        </div>
+                        <h3 className="text-xl font-bold">2. Sign</h3>
+                        <p className="text-sm text-slate-500">Hardware-backed key (StrongBox) signs media immediately.</p>
+                    </div>
+
+                    <div className="flex flex-col items-center text-center space-y-4 bg-white dark:bg-slate-950 p-4">
+                        <div className="h-24 w-24 rounded-full bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center border-4 border-white dark:border-slate-950">
+                            <ShieldCheck className="h-10 w-10 text-emerald-600 dark:text-emerald-400" />
+                        </div>
+                        <h3 className="text-xl font-bold">3. Verify</h3>
+                        <p className="text-sm text-slate-500">Backend validates integrity, origin, and checks for edits.</p>
+                    </div>
+
+                    <div className="flex flex-col items-center text-center space-y-4 bg-white dark:bg-slate-950 p-4">
+                        <div className="h-24 w-24 rounded-full bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center border-4 border-white dark:border-slate-950">
+                            <FileCheck className="h-10 w-10 text-emerald-600 dark:text-emerald-400" />
+                        </div>
+                        <h3 className="text-xl font-bold">4. Prove</h3>
+                        <p className="text-sm text-slate-500">Immutable evidence package is created for court or audit.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        {/* 5. Trust Moat Comparison */}
+        <section className="w-full py-20 bg-slate-50 dark:bg-slate-900">
+             <div className="container px-4 md:px-6">
+                <div className="flex flex-col items-center justify-center space-y-4 text-center mb-12">
+                    <h2 className="text-3xl font-bold tracking-tighter">Why PoPC is Different</h2>
+                    <p className="text-slate-500">Metadata and watermarks aren't enough. You need cryptography.</p>
+                </div>
+                
+                <div className="max-w-3xl mx-auto overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-sm">
+                    <table className="w-full text-left text-sm">
+                        <thead className="bg-slate-50 dark:bg-slate-900">
+                            <tr>
+                                <th className="p-4 font-semibold">Feature</th>
+                                <th className="p-4 font-bold text-emerald-600 dark:text-emerald-400">PoPC</th>
+                                <th className="p-4 font-medium text-slate-500">Metadata (EXIF)</th>
+                                <th className="p-4 font-medium text-slate-500">Watermarks</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                            <tr>
+                                <td className="p-4 font-medium">Tamper-Proof</td>
+                                <td className="p-4 text-emerald-600">✔ Yes</td>
+                                <td className="p-4 text-slate-500">✖ No</td>
+                                <td className="p-4 text-slate-500">✖ No</td>
+                            </tr>
+                            <tr>
+                                <td className="p-4 font-medium">Hardware-Backed</td>
+                                <td className="p-4 text-emerald-600">✔ Yes</td>
+                                <td className="p-4 text-slate-500">✖ No</td>
+                                <td className="p-4 text-slate-500">✖ No</td>
+                            </tr>
+                            <tr>
+                                <td className="p-4 font-medium">Court-Ready</td>
+                                <td className="p-4 text-emerald-600">✔ Yes</td>
+                                <td className="p-4 text-slate-500">✖ No</td>
+                                <td className="p-4 text-slate-500">✖ No</td>
+                            </tr>
+                            <tr>
+                                <td className="p-4 font-medium">AI-Resistant</td>
+                                <td className="p-4 text-emerald-600">✔ Yes</td>
+                                <td className="p-4 text-slate-500">✖ No</td>
+                                <td className="p-4 text-slate-500">Partial</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+             </div>
+        </section>
+
+        {/* 6. Use Cases */}
+        <section id="use-cases" className="w-full py-20 md:py-32 bg-white dark:bg-slate-950">
+            <div className="container px-4 md:px-6">
+                <h2 className="text-3xl font-bold tracking-tighter mb-12 text-center">Built For Critical Evidence</h2>
+                <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+                    <div className="flex flex-col p-6 border rounded-xl hover:shadow-lg transition-shadow bg-slate-50 dark:bg-slate-900/50">
+                        <Newspaper className="h-10 w-10 text-emerald-600 mb-4" />
+                        <h3 className="text-lg font-bold mb-2">Journalism</h3>
+                        <p className="text-slate-500 text-sm">Prove photos from conflict zones are real. Defend credibility against fake news accusations.</p>
+                    </div>
+                    <div className="flex flex-col p-6 border rounded-xl hover:shadow-lg transition-shadow bg-slate-50 dark:bg-slate-900/50">
+                        <Briefcase className="h-10 w-10 text-emerald-600 mb-4" />
+                        <h3 className="text-lg font-bold mb-2">Insurance</h3>
+                        <p className="text-slate-500 text-sm">Eliminate AI-generated claims. Reduce fraud by verifying accident scene photos instantly.</p>
+                    </div>
+                    <div className="flex flex-col p-6 border rounded-xl hover:shadow-lg transition-shadow bg-slate-50 dark:bg-slate-900/50">
+                        <Scale className="h-10 w-10 text-emerald-600 mb-4" />
+                        <h3 className="text-lg font-bold mb-2">Legal</h3>
+                        <p className="text-slate-500 text-sm">Authenticate digital evidence for court. Establish a cryptographic chain of custody.</p>
+                    </div>
+                    <div className="flex flex-col p-6 border rounded-xl hover:shadow-lg transition-shadow bg-slate-50 dark:bg-slate-900/50">
+                        <Globe className="h-10 w-10 text-emerald-600 mb-4" />
+                        <h3 className="text-lg font-bold mb-2">Platforms</h3>
+                        <p className="text-slate-500 text-sm">Flag fake content at upload. Restore user trust in marketplace listings and news feeds.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        {/* 7. Final CTA */}
+        <section className="w-full py-20 bg-slate-950 text-white text-center">
+            <div className="container px-4 md:px-6">
+                <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl mb-6">
+                    Restore Trust in Digital Media
+                </h2>
+                <p className="mx-auto max-w-[600px] text-slate-400 mb-10 text-lg">
+                    If evidence matters, PoPC is the standard.
                 </p>
-                <div className="text-sm text-gray-500">
-                  <div className="font-mono bg-gray-100 dark:bg-gray-900 p-2 rounded">popc.captureAndSign()</div>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                    <Button asChild size="lg" className="bg-emerald-600 hover:bg-emerald-700 h-12 px-8">
+                        <Link href="/dashboard">Request Demo</Link>
+                    </Button>
+                    <Button asChild variant="outline" size="lg" className="h-12 px-8 border-slate-700 hover:bg-slate-800 text-slate-300">
+                         <Link href="mailto:contact@popc.dev">Talk to Us</Link>
+                    </Button>
                 </div>
-              </div>
-              
-              <div className="flex flex-col items-start space-y-4 p-8 bg-white dark:bg-gray-800 rounded-xl shadow-sm border hover:shadow-md transition-shadow">
-                <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                  <ShieldCheck className="h-8 w-8 text-green-600 dark:text-green-400" />
-                </div>
-                <h3 className="text-2xl font-bold">2. Verify Authenticity</h3>
-                <p className="text-gray-600 dark:text-gray-400">
-                  One API endpoint. JSON response. Real or tampered in milliseconds.
-                </p>
-                <div className="text-sm text-gray-500">
-                  <div className="font-mono bg-gray-100 dark:bg-gray-900 p-2 rounded">POST /v1/verify</div>
-                </div>
-              </div>
-              
-              <div className="flex flex-col items-start space-y-4 p-8 bg-white dark:bg-gray-800 rounded-xl shadow-sm border hover:shadow-md transition-shadow">
-                <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-                  <Terminal className="h-8 w-8 text-purple-600 dark:text-purple-400" />
-                </div>
-                <h3 className="text-2xl font-bold">3. Developer Dashboard</h3>
-                <p className="text-gray-600 dark:text-gray-400">
-                  Enrolled devices. Recent verifications. API key management. Usage analytics.
-                </p>
-                <div className="text-sm text-gray-500">
-                  <Button asChild variant="link" className="p-0 h-auto">
-                    <Link href="/dashboard">View Dashboard →</Link>
-                  </Button>
-                </div>
-              </div>
             </div>
-          </div>
         </section>
 
-        {/* Use Cases - Niche Focus */}
-        <section className="w-full py-12 md:py-24 bg-gray-50 dark:bg-gray-900">
-          <div className="container px-4 md:px-6 mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">Perfect For</h2>
-              <p className="mt-4 text-gray-500 dark:text-gray-400">
-                (We don&apos;t do enterprise workflows. We do developer SDKs.)
-              </p>
-            </div>
-            <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-              <div className="flex gap-4 items-start p-6 bg-white dark:bg-gray-800 rounded-lg border">
-                <div className="text-3xl">💪</div>
-                <div>
-                  <div className="font-bold text-lg mb-1">Fitness Apps</div>
-                  <div className="text-gray-600 dark:text-gray-400 text-sm">Verified before/after transformation photos. No more fake progress pics.</div>
+        {/* Footer */}
+        <footer className="w-full py-8 border-t bg-slate-50 dark:bg-slate-950">
+            <div className="container px-4 md:px-6 flex flex-col md:flex-row justify-between items-center gap-4">
+                <p className="text-sm text-slate-500">© 2026 PoPC. All rights reserved.</p>
+                <div className="flex gap-6">
+                    <Link className="text-sm text-slate-500 hover:underline" href="#">Privacy</Link>
+                    <Link className="text-sm text-slate-500 hover:underline" href="#">Terms</Link>
+                    <Link className="text-sm text-slate-500 hover:underline" href="#">Contact</Link>
                 </div>
-              </div>
-              <div className="flex gap-4 items-start p-6 bg-white dark:bg-gray-800 rounded-lg border">
-                <div className="text-3xl">🏠</div>
-                <div>
-                  <div className="font-bold text-lg mb-1">Marketplaces</div>
-                  <div className="text-gray-600 dark:text-gray-400 text-sm">Verified item listing photos. Show &quot;Verified Photos ✓&quot; badge to build trust.</div>
-                </div>
-              </div>
-              <div className="flex gap-4 items-start p-6 bg-white dark:bg-gray-800 rounded-lg border">
-                <div className="text-3xl">🚚</div>
-                <div>
-                  <div className="font-bold text-lg mb-1">Delivery Apps</div>
-                  <div className="text-gray-600 dark:text-gray-400 text-sm">Verified proof of completion photos. Eliminate delivery disputes.</div>
-                </div>
-              </div>
-              <div className="flex gap-4 items-start p-6 bg-white dark:bg-gray-800 rounded-lg border">
-                <div className="text-3xl">🎨</div>
-                <div>
-                  <div className="font-bold text-lg mb-1">Creator Platforms</div>
-                  <div className="text-gray-600 dark:text-gray-400 text-sm">Verified original content. Prove photos weren&apos;t AI-generated.</div>
-                </div>
-              </div>
             </div>
-          </div>
-        </section>
-
-        {/* Pricing */}
-        <section id="pricing" className="w-full py-12 md:py-24 lg:py-32">
-          <div className="container px-4 md:px-6 mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">Simple, Transparent Pricing</h2>
-              <p className="mt-4 text-gray-500 dark:text-gray-400">
-                Start free. Scale as you grow. No contracts.
-              </p>
-            </div>
-            <div className="grid md:grid-cols-4 gap-6 max-w-6xl mx-auto">
-              {/* Free */}
-              <div className="p-6 border rounded-lg bg-white dark:bg-gray-800 shadow-sm">
-                <div className="text-2xl font-bold mb-2">Free</div>
-                <div className="text-3xl font-bold mb-4">$0<span className="text-base font-normal text-gray-600">/mo</span></div>
-                <ul className="space-y-2 mb-6 text-sm">
-                  <li className="flex items-start gap-2"><Check className="h-4 w-4 text-green-600 mt-0.5" /> 100 verifications/mo</li>
-                  <li className="flex items-start gap-2"><Check className="h-4 w-4 text-green-600 mt-0.5" /> Basic dashboard</li>
-                  <li className="flex items-start gap-2"><Check className="h-4 w-4 text-green-600 mt-0.5" /> Community support</li>
-                </ul>
-                <Button asChild variant="outline" className="w-full">
-                  <Link href="/dashboard">Start Free</Link>
-                </Button>
-              </div>
-
-              {/* Starter */}
-              <div className="p-6 border rounded-lg bg-white dark:bg-gray-800 shadow-sm">
-                <div className="text-2xl font-bold mb-2">Starter</div>
-                <div className="text-3xl font-bold mb-4">$19<span className="text-base font-normal text-gray-600">/mo</span></div>
-                <ul className="space-y-2 mb-6 text-sm">
-                  <li className="flex items-start gap-2"><Check className="h-4 w-4 text-green-600 mt-0.5" /> 1,000 verifications</li>
-                  <li className="flex items-start gap-2"><Check className="h-4 w-4 text-green-600 mt-0.5" /> Android & Web SDK</li>
-                  <li className="flex items-start gap-2"><Check className="h-4 w-4 text-green-600 mt-0.5" /> Email support</li>
-                </ul>
-                <Button asChild variant="outline" className="w-full">
-                  <Link href="/dashboard">Get Started</Link>
-                </Button>
-              </div>
-
-              {/* Growth - Most Popular */}
-              <div className="p-6 border-2 border-blue-500 rounded-lg bg-white dark:bg-gray-800 shadow-md relative">
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-500 text-white text-xs px-3 py-1 rounded-full font-semibold">
-                  MOST POPULAR
-                </div>
-                <div className="text-2xl font-bold mb-2">Growth</div>
-                <div className="text-3xl font-bold mb-4">$79<span className="text-base font-normal text-gray-600">/mo</span></div>
-                <ul className="space-y-2 mb-6 text-sm">
-                  <li className="flex items-start gap-2"><Check className="h-4 w-4 text-green-600 mt-0.5" /> 10,000 verifications</li>
-                  <li className="flex items-start gap-2"><Check className="h-4 w-4 text-green-600 mt-0.5" /> Team dashboard</li>
-                  <li className="flex items-start gap-2"><Check className="h-4 w-4 text-green-600 mt-0.5" /> Device revocation API</li>
-                  <li className="flex items-start gap-2"><Check className="h-4 w-4 text-green-600 mt-0.5" /> Priority support</li>
-                </ul>
-                <Button asChild className="w-full">
-                  <Link href="/dashboard">Get Started</Link>
-                </Button>
-              </div>
-
-              {/* Pro */}
-              <div className="p-6 border rounded-lg bg-white dark:bg-gray-800 shadow-sm">
-                <div className="text-2xl font-bold mb-2">Pro</div>
-                <div className="text-3xl font-bold mb-4">$199<span className="text-base font-normal text-gray-600">/mo</span></div>
-                <ul className="space-y-2 mb-6 text-sm">
-                  <li className="flex items-start gap-2"><Check className="h-4 w-4 text-green-600 mt-0.5" /> 50,000 verifications</li>
-                  <li className="flex items-start gap-2"><Check className="h-4 w-4 text-green-600 mt-0.5" /> Audit logs</li>
-                  <li className="flex items-start gap-2"><Check className="h-4 w-4 text-green-600 mt-0.5" /> Custom device types</li>
-                  <li className="flex items-start gap-2"><Check className="h-4 w-4 text-green-600 mt-0.5" /> SLA & phone support</li>
-                </ul>
-                <Button asChild variant="outline" className="w-full">
-                  <Link href="/dashboard">Get Started</Link>
-                </Button>
-              </div>
-            </div>
-            <div className="text-center mt-8">
-              <p className="text-gray-500 text-sm">Need more? <Link href="/dashboard" className="text-blue-600 hover:underline">Contact us</Link> for Enterprise pricing.</p>
-            </div>
-          </div>
-        </section>
-
-        {/* CTA */}
-        <section className="w-full py-12 md:py-24 bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
-          <div className="container px-4 md:px-6 mx-auto text-center">
-            <h2 className="text-4xl font-bold mb-4">Ready to get started?</h2>
-            <p className="text-xl mb-8 opacity-90 max-w-2xl mx-auto">
-              Join developers building the future of verified media.<br />
-              Install the SDK in under 10 minutes.
-            </p>
-            <div className="flex gap-4 justify-center flex-wrap">
-              <Button asChild size="lg" variant="secondary" className="text-lg px-8 py-6">
-                <Link href="/dashboard">Get API Key</Link>
-              </Button>
-              <Button asChild size="lg" variant="outline" className="text-lg px-8 py-6 bg-transparent text-white border-white hover:bg-white/10">
-                <Link href="https://github.com/romeoxt/image-verification">View Docs</Link>
-              </Button>
-            </div>
-          </div>
-        </section>
+        </footer>
       </main>
-
-      {/* Footer */}
-      <footer className="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6 border-t">
-        <p className="text-xs text-gray-500 dark:text-gray-400">© 2025 PoPC. Built by developers, for developers.</p>
-        <nav className="sm:ml-auto flex gap-4 sm:gap-6">
-          <Link className="text-xs hover:underline underline-offset-4" href="https://github.com/romeoxt/image-verification">
-            GitHub
-          </Link>
-          <Link className="text-xs hover:underline underline-offset-4" href="/dashboard">
-            Dashboard
-          </Link>
-          <Link className="text-xs hover:underline underline-offset-4" href="#">
-            Privacy
-          </Link>
-        </nav>
-      </footer>
     </div>
   );
 }
