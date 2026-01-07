@@ -38,14 +38,14 @@ export function SiteHeader() {
             </li>
           </ul>
           
-          <div className="nav_list-secondary">
-            <Link href="/dashboard" className="nav_link eyebrow cc-secondary" style={{ color: "#1a1a1a" }}>
-              Login
-            </Link>
-            <Link aria-label="" href="/dashboard" className="btn cc-navigation w-inline-block" style={{ borderColor: "#1a1a1a", color: "#1a1a1a" }}>
-              <div>Get Started</div>
-            </Link>
-          </div>
+              <div className="nav_list-secondary">
+                <Link href="/login" className="nav_link eyebrow cc-secondary" style={{ color: "#1a1a1a" }}>
+                  Login
+                </Link>
+                <Link aria-label="" href="/dashboard" className="btn cc-navigation w-inline-block" style={{ borderColor: "#1a1a1a", color: "#1a1a1a" }}>
+                  <div>Get Started</div>
+                </Link>
+              </div>
         </div>
         
         <div className="menu_button">

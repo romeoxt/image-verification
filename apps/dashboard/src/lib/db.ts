@@ -110,3 +110,15 @@ export interface ApiKey {
   scopes: string[];
 }
 
+export interface User {
+  id: string;
+  email: string;
+  password_hash: string;
+  full_name: string | null;
+  role: 'admin' | 'user' | 'viewer';
+  is_active: boolean;
+  created_at: Date;
+  updated_at: Date | null;
+  last_login_at: Date | null;
+}
+

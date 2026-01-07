@@ -11,10 +11,13 @@ import {
   ShieldCheck,
   Menu,
   X,
-  Key
+  Key,
+  User as UserIcon,
+  LogOut
 } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
+import { logoutAction } from '@/app/login/actions';
 
 const navItems = [
   { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
@@ -22,10 +25,15 @@ const navItems = [
   { href: '/dashboard/devices', label: 'Devices', icon: Smartphone },
   { href: '/dashboard/analytics', label: 'Analytics', icon: BarChart3 },
   { href: '/dashboard/api-keys', label: 'API Keys', icon: Key },
-  // { href: '/dashboard/settings', label: 'Settings', icon: Settings },
+  { href: '/dashboard/users', label: 'Users', icon: UserIcon },
 ];
 
-export function Sidebar({ className }: { className?: string }) {
+interface SidebarProps {
+  className?: string;
+  user?: { name?: string | null; email?: string; role?: string };
+}
+
+export function Sidebar({ className, user }: SidebarProps) {
   const pathname = usePathname();
 
   return (
@@ -58,12 +66,20 @@ export function Sidebar({ className }: { className?: string }) {
       <div className="p-4 border-t border-slate-800">
         <div className="flex items-center gap-3 px-4 py-3">
           <div className="h-8 w-8 rounded-full bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-400">
-            JD
+            {user?.name?.charAt(0) || user?.email?.charAt(0) || 'U'}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-slate-200 truncate">John Doe</p>
-            <p className="text-xs text-slate-500 truncate">Admin</p>
+            <p className="text-sm font-medium text-slate-200 truncate">{user?.name || user?.email || 'User'}</p>
+            <p className="text-xs text-slate-500 truncate capitalize">{user?.role || 'Viewer'}</p>
           </div>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="text-slate-500 hover:text-slate-200"
+            onClick={() => logoutAction()}
+          >
+            <LogOut className="h-4 w-4" />
+          </Button>
         </div>
       </div>
     </div>

@@ -1,15 +1,19 @@
 import { Sidebar, MobileNav } from '@/components/dashboard/sidebar';
+import { getSession } from '@/lib/auth';
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const session = await getSession();
+  const user = session?.user;
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col md:flex-row">
       {/* Sidebar for Desktop */}
       <div className="hidden md:block w-64 shrink-0 h-screen sticky top-0">
-        <Sidebar className="h-full" />
+        <Sidebar className="h-full" user={user} />
       </div>
 
       {/* Mobile Nav */}
@@ -24,5 +28,3 @@ export default function DashboardLayout({
     </div>
   );
 }
-
-
