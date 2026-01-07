@@ -20,5 +20,8 @@
   },
   "engines": {
     "node": ">=20"
+  },
+  "dependencies": {
+    "lottie-react": "^2.4.1"
   }
 }
