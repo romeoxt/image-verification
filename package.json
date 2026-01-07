@@ -20,5 +20,11 @@
   },
   "engines": {
     "node": ">=20"
+  },
+  "dependencies": {
+    "archiver": "^7.0.1"
+  },
+  "devDependencies": {
+    "@types/archiver": "^7.0.0"
   }
 }
