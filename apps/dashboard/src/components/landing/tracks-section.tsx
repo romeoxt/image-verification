@@ -1,4 +1,38 @@
+'use client';
+
+import { motion } from 'framer-motion';
+
 export function TracksSection() {
+  const pathVariants = {
+    hidden: { pathLength: 0, opacity: 0 },
+    visible: {
+      pathLength: 1,
+      opacity: 1,
+      transition: {
+        duration: 2,
+        ease: "easeInOut",
+        repeat: Infinity,
+        repeatType: "loop" as const,
+        repeatDelay: 1
+      },
+    },
+  };
+
+  const barVariants = {
+    hidden: { scaleY: 0, opacity: 0 },
+    visible: {
+      scaleY: 1,
+      opacity: 1,
+      transition: {
+        duration: 0.8,
+        ease: "easeOut",
+        repeat: Infinity,
+        repeatType: "reverse" as const,
+        repeatDelay: 0.5
+      },
+    },
+  };
+
   return (
     <section className="track section u-pb-0">
       <div className="u-vflex-stretch-top u-vgap-64-24">
@@ -30,7 +64,7 @@ export function TracksSection() {
           </div>
 
           {/* SVG Tracks */}
-          <svg 
+          <motion.svg 
             xmlns="http://www.w3.org/2000/svg" 
             width="100%" 
             height="100%" 
@@ -38,14 +72,18 @@ export function TracksSection() {
             fill="none" 
             className="u-events-none absolute top-0 left-0 w-full h-full"
             preserveAspectRatio="xMidYMin slice"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
           >
-            <path d="M430 166V259.611C430 302.154 456.917 340.039 497.09 354.04L896.91 493.383C937.083 507.384 964 545.27 964 587.813V741C964 776.07 992.43 804.5 1027.5 804.5H1440" stroke="#B5B9A6" strokeWidth="2" strokeDasharray="4 4" id="green-path-1" />
-            <path d="M946.5 179V273.897C946.5 315.809 920.364 353.274 881.029 367.746L541.471 492.677C502.136 507.149 476 544.614 476 586.526V691V767.5C476 822.728 431.228 867.5 376 867.5H0" stroke="#B5B9A6" strokeWidth="2" strokeDasharray="4 4" id="green-path-4" />
-            <path d="M1013 206V315.552C1013 326.771 1011.11 337.909 1007.42 348.502L907.084 635.998C903.388 646.591 901.5 657.729 901.5 668.948V1109.5C901.5 1164.73 856.728 1209.5 801.5 1209.5H753.5C698.272 1209.5 653.5 1254.27 653.5 1309.5V1367" stroke="#B5B9A6" strokeWidth="2" strokeDasharray="4 4" id="red-path" />
-            <path d="M882 195V288.411C882 306.881 887.115 324.99 896.779 340.731L1021.22 543.427C1030.88 559.168 1036 577.277 1036 595.747V791.735C1036 829.713 1066.79 860.5 1104.76 860.5H1440" stroke="#B5B9A6" strokeWidth="2" strokeDasharray="4 4" id="green-path-3" />
-            <path d="M557 188V288.567C557 306.939 551.939 324.956 542.372 340.64L418.628 543.518C409.061 559.203 404 577.219 404 595.591V691.735V810C404 865.228 359.228 910 304 910H0" stroke="#B5B9A6" strokeWidth="2" strokeDasharray="4 4" id="green-path-2" />
+            {/* Animated Paths */}
+            <motion.path variants={pathVariants} d="M430 166V259.611C430 302.154 456.917 340.039 497.09 354.04L896.91 493.383C937.083 507.384 964 545.27 964 587.813V741C964 776.07 992.43 804.5 1027.5 804.5H1440" stroke="#B5B9A6" strokeWidth="2" strokeDasharray="4 4" id="green-path-1" />
+            <motion.path variants={pathVariants} d="M946.5 179V273.897C946.5 315.809 920.364 353.274 881.029 367.746L541.471 492.677C502.136 507.149 476 544.614 476 586.526V691V767.5C476 822.728 431.228 867.5 376 867.5H0" stroke="#B5B9A6" strokeWidth="2" strokeDasharray="4 4" id="green-path-4" />
+            <motion.path variants={pathVariants} d="M1013 206V315.552C1013 326.771 1011.11 337.909 1007.42 348.502L907.084 635.998C903.388 646.591 901.5 657.729 901.5 668.948V1109.5C901.5 1164.73 856.728 1209.5 801.5 1209.5H753.5C698.272 1209.5 653.5 1254.27 653.5 1309.5V1367" stroke="#B5B9A6" strokeWidth="2" strokeDasharray="4 4" id="red-path" />
+            <motion.path variants={pathVariants} d="M882 195V288.411C882 306.881 887.115 324.99 896.779 340.731L1021.22 543.427C1030.88 559.168 1036 577.277 1036 595.747V791.735C1036 829.713 1066.79 860.5 1104.76 860.5H1440" stroke="#B5B9A6" strokeWidth="2" strokeDasharray="4 4" id="green-path-3" />
+            <motion.path variants={pathVariants} d="M557 188V288.567C557 306.939 551.939 324.956 542.372 340.64L418.628 543.518C409.061 559.203 404 577.219 404 595.591V691.735V810C404 865.228 359.228 910 304 910H0" stroke="#B5B9A6" strokeWidth="2" strokeDasharray="4 4" id="green-path-2" />
             
-            {/* Plugs/Joints */}
+            {/* Plugs/Joints - Keep static or simple fade in */}
             <path d="M456.202 698.5L495.767 698.5L495.767 691.5L456.202 691.5L456.202 698.5Z" stroke="#072C2C" strokeWidth="1" />
             <path d="M475.217 697.485L475.217 692.523L476.754 692.523L476.754 697.485L475.217 697.485Z" fill="#072C2C" />
             <path d="M497.961 696.977L497.961 693.027L500 693.027L500 696.977L497.961 696.977Z" fill="#072C2C" />
@@ -66,7 +104,7 @@ export function TracksSection() {
             <path d="M1057.96 696.973L1057.96 693.023L1060 693.023L1060 696.973L1057.96 696.973Z" fill="#072C2C" />
             <path d="M1012 696.973L1012 693.023L1014.04 693.023L1014.04 696.973L1012 696.973Z" fill="#072C2C" />
 
-            {/* Falling Bars (Animated via CSS/Framer ideally, but static here for layout match) */}
+            {/* Falling Bars (Animated via Framer) */}
             <rect x="615" y="1367" width="20" height="111" fill="#E6E6D1" />
             <path d="M743.789 1367H765L721.211 1478H700L743.789 1367Z" fill="#E6E6D1" />
             <path d="M773.789 1367H795L751.211 1478H730L773.789 1367Z" fill="#E6E6D1" />
@@ -82,18 +120,17 @@ export function TracksSection() {
             <rect x="308.5" y="55.5" width="19" height="110" fill="#E6E6D1" stroke="#B5B9A6" />
             
             {/* Green Success Bars (indicating verified flow) */}
-            <rect x="547.5" y="77.5" width="19" height="110" fill="#D0FFA8" stroke="#B5B9A6" className="animate-pulse" />
-            <rect x="936.5" y="68.5" width="19" height="110" fill="#D0FFA8" stroke="#B5B9A6" className="animate-pulse" />
-            <rect x="420.5" y="55.5" width="19" height="110" fill="#D0FFA8" stroke="#B5B9A6" className="animate-pulse" />
-            <rect x="872.5" y="84.5" width="19" height="110" fill="#D0FFA8" stroke="#B5B9A6" className="animate-pulse" />
+            <motion.rect variants={barVariants} x="547.5" y="77.5" width="19" height="110" fill="#D0FFA8" stroke="#B5B9A6" style={{ transformOrigin: 'top' }} />
+            <motion.rect variants={barVariants} x="936.5" y="68.5" width="19" height="110" fill="#D0FFA8" stroke="#B5B9A6" style={{ transformOrigin: 'top' }} />
+            <motion.rect variants={barVariants} x="420.5" y="55.5" width="19" height="110" fill="#D0FFA8" stroke="#B5B9A6" style={{ transformOrigin: 'top' }} />
+            <motion.rect variants={barVariants} x="872.5" y="84.5" width="19" height="110" fill="#D0FFA8" stroke="#B5B9A6" style={{ transformOrigin: 'top' }} />
             
             {/* Red Error Bar (indicating tampering/rejection) */}
-            <rect x="1003" y="94" width="20" height="111" fill="#FF5F02" className="animate-pulse" />
+            <motion.rect variants={barVariants} x="1003" y="94" width="20" height="111" fill="#FF5F02" style={{ transformOrigin: 'top' }} />
 
-          </svg>
+          </motion.svg>
         </div>
       </div>
     </section>
   );
 }
-
