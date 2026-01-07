@@ -10,7 +10,8 @@ import {
   Settings, 
   ShieldCheck,
   Menu,
-  X
+  X,
+  Key
 } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,7 @@ const navItems = [
   { href: '/dashboard/gallery', label: 'Gallery', icon: ImageIcon },
   { href: '/dashboard/devices', label: 'Devices', icon: Smartphone },
   { href: '/dashboard/analytics', label: 'Analytics', icon: BarChart3 },
+  { href: '/dashboard/api-keys', label: 'API Keys', icon: Key },
   // { href: '/dashboard/settings', label: 'Settings', icon: Settings },
 ];
 

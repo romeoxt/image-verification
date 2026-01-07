@@ -99,3 +99,13 @@ export interface Verification {
   asset_mime_type: string | null;
 }
 
+export interface ApiKey {
+  id: string;
+  key_prefix: string;
+  name: string;
+  is_active: boolean;
+  created_at: Date;
+  last_used_at: Date | null;
+  scopes: string[];
+}
+

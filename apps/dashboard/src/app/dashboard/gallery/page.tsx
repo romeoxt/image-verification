@@ -107,8 +107,8 @@ export default async function GalleryPage() {
                   </div>
                 </div>
 
-                <Button asChild className="w-full mt-2" size="sm" variant="secondary">
-                  <Link href={`/verify/${item.id}`}>View Details</Link>
+                    <Button asChild className="w-full mt-2" size="sm" variant="secondary">
+                  <Link href={`/dashboard/verifications/${item.id}`}>View Details</Link>
                 </Button>
               </CardContent>
             </Card>
