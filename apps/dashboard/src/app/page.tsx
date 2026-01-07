@@ -4,9 +4,9 @@ import { ShieldCheck, Camera, Lock, Terminal, Activity, FileCheck, AlertTriangle
 
 export default function LandingPage() {
   return (
-    <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-950">
+    <div className="flex flex-col min-h-screen bg-background text-foreground">
       {/* 1. Header */}
-      <header className="px-4 lg:px-6 h-16 flex items-center border-b bg-white/80 dark:bg-slate-950/80 backdrop-blur sticky top-0 z-50">
+      <header className="px-4 lg:px-6 h-16 flex items-center border-b bg-background/80 backdrop-blur sticky top-0 z-50">
         <Link className="flex items-center justify-center gap-2" href="#">
           <ShieldCheck className="h-6 w-6 text-emerald-600" />
           <span className="font-bold text-xl tracking-tight">PoPC</span>
@@ -62,7 +62,7 @@ export default function LandingPage() {
         </section>
 
         {/* 3. The Problem */}
-        <section className="w-full py-20 bg-slate-50 dark:bg-slate-900">
+        <section className="w-full py-20 bg-muted/40 dark:bg-muted/10">
             <div className="container px-4 md:px-6">
                 <div className="grid gap-12 lg:grid-cols-3">
                     <div className="flex flex-col items-start space-y-4">
@@ -97,7 +97,7 @@ export default function LandingPage() {
         </section>
 
         {/* 4. How It Works */}
-        <section id="how-it-works" className="w-full py-20 md:py-32 bg-white dark:bg-slate-950">
+        <section id="how-it-works" className="w-full py-20 md:py-32 bg-background">
             <div className="container px-4 md:px-6">
                 <div className="flex flex-col items-center justify-center space-y-4 text-center mb-16">
                     <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">How PoPC Works</h2>
@@ -110,7 +110,7 @@ export default function LandingPage() {
                      {/* Connecting Line (Desktop) */}
                     <div className="hidden md:block absolute top-12 left-[12%] right-[12%] h-0.5 bg-slate-200 dark:bg-slate-800 -z-10"></div>
 
-                    <div className="flex flex-col items-center text-center space-y-4 bg-white dark:bg-slate-950 p-4">
+                    <div className="flex flex-col items-center text-center space-y-4 bg-card p-6 rounded-xl border shadow-sm">
                         <div className="h-24 w-24 rounded-full bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center border-4 border-white dark:border-slate-950">
                             <Camera className="h-10 w-10 text-emerald-600 dark:text-emerald-400" />
                         </div>
@@ -118,7 +118,7 @@ export default function LandingPage() {
                         <p className="text-sm text-slate-500">Secure camera app captures photo/video directly from hardware.</p>
                     </div>
 
-                    <div className="flex flex-col items-center text-center space-y-4 bg-white dark:bg-slate-950 p-4">
+                    <div className="flex flex-col items-center text-center space-y-4 bg-card p-6 rounded-xl border shadow-sm">
                         <div className="h-24 w-24 rounded-full bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center border-4 border-white dark:border-slate-950">
                             <Lock className="h-10 w-10 text-emerald-600 dark:text-emerald-400" />
                         </div>
@@ -126,7 +126,7 @@ export default function LandingPage() {
                         <p className="text-sm text-slate-500">Hardware-backed key (StrongBox) signs media immediately.</p>
                     </div>
 
-                    <div className="flex flex-col items-center text-center space-y-4 bg-white dark:bg-slate-950 p-4">
+                    <div className="flex flex-col items-center text-center space-y-4 bg-card p-6 rounded-xl border shadow-sm">
                         <div className="h-24 w-24 rounded-full bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center border-4 border-white dark:border-slate-950">
                             <ShieldCheck className="h-10 w-10 text-emerald-600 dark:text-emerald-400" />
                         </div>
@@ -134,7 +134,7 @@ export default function LandingPage() {
                         <p className="text-sm text-slate-500">Backend validates integrity, origin, and checks for edits.</p>
                     </div>
 
-                    <div className="flex flex-col items-center text-center space-y-4 bg-white dark:bg-slate-950 p-4">
+                    <div className="flex flex-col items-center text-center space-y-4 bg-card p-6 rounded-xl border shadow-sm">
                         <div className="h-24 w-24 rounded-full bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center border-4 border-white dark:border-slate-950">
                             <FileCheck className="h-10 w-10 text-emerald-600 dark:text-emerald-400" />
                         </div>
@@ -146,7 +146,7 @@ export default function LandingPage() {
         </section>
 
         {/* 5. Trust Moat Comparison */}
-        <section className="w-full py-20 bg-slate-50 dark:bg-slate-900">
+        <section className="w-full py-20 bg-muted/40 dark:bg-muted/10">
              <div className="container px-4 md:px-6">
                 <div className="flex flex-col items-center justify-center space-y-4 text-center mb-12">
                     <h2 className="text-3xl font-bold tracking-tighter">Why PoPC is Different</h2>
@@ -195,26 +195,26 @@ export default function LandingPage() {
         </section>
 
         {/* 6. Use Cases */}
-        <section id="use-cases" className="w-full py-20 md:py-32 bg-white dark:bg-slate-950">
+        <section id="use-cases" className="w-full py-20 md:py-32 bg-background">
             <div className="container px-4 md:px-6">
                 <h2 className="text-3xl font-bold tracking-tighter mb-12 text-center">Built For Critical Evidence</h2>
                 <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
-                    <div className="flex flex-col p-6 border rounded-xl hover:shadow-lg transition-shadow bg-slate-50 dark:bg-slate-900/50">
+                    <div className="flex flex-col p-6 border rounded-xl hover:shadow-lg transition-shadow bg-card">
                         <Newspaper className="h-10 w-10 text-emerald-600 mb-4" />
                         <h3 className="text-lg font-bold mb-2">Journalism</h3>
                         <p className="text-slate-500 text-sm">Prove photos from conflict zones are real. Defend credibility against fake news accusations.</p>
                     </div>
-                    <div className="flex flex-col p-6 border rounded-xl hover:shadow-lg transition-shadow bg-slate-50 dark:bg-slate-900/50">
+                    <div className="flex flex-col p-6 border rounded-xl hover:shadow-lg transition-shadow bg-card">
                         <Briefcase className="h-10 w-10 text-emerald-600 mb-4" />
                         <h3 className="text-lg font-bold mb-2">Insurance</h3>
                         <p className="text-slate-500 text-sm">Eliminate AI-generated claims. Reduce fraud by verifying accident scene photos instantly.</p>
                     </div>
-                    <div className="flex flex-col p-6 border rounded-xl hover:shadow-lg transition-shadow bg-slate-50 dark:bg-slate-900/50">
+                    <div className="flex flex-col p-6 border rounded-xl hover:shadow-lg transition-shadow bg-card">
                         <Scale className="h-10 w-10 text-emerald-600 mb-4" />
                         <h3 className="text-lg font-bold mb-2">Legal</h3>
                         <p className="text-slate-500 text-sm">Authenticate digital evidence for court. Establish a cryptographic chain of custody.</p>
                     </div>
-                    <div className="flex flex-col p-6 border rounded-xl hover:shadow-lg transition-shadow bg-slate-50 dark:bg-slate-900/50">
+                    <div className="flex flex-col p-6 border rounded-xl hover:shadow-lg transition-shadow bg-card">
                         <Globe className="h-10 w-10 text-emerald-600 mb-4" />
                         <h3 className="text-lg font-bold mb-2">Platforms</h3>
                         <p className="text-slate-500 text-sm">Flag fake content at upload. Restore user trust in marketplace listings and news feeds.</p>
@@ -244,7 +244,7 @@ export default function LandingPage() {
         </section>
 
         {/* Footer */}
-        <footer className="w-full py-8 border-t bg-slate-50 dark:bg-slate-950">
+        <footer className="w-full py-8 border-t bg-background">
             <div className="container px-4 md:px-6 flex flex-col md:flex-row justify-between items-center gap-4">
                 <p className="text-sm text-slate-500">© 2026 PoPC. All rights reserved.</p>
                 <div className="flex gap-6">
