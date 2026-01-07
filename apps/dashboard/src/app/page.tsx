@@ -24,10 +24,10 @@ export default function LandingPage() {
           <div className="hidden sm:flex gap-2">
             <Button asChild variant="ghost" size="sm">
                 <Link href="/dashboard">Log In</Link>
-            </Button>
+          </Button>
             <Button asChild size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white">
                 <Link href="/dashboard">Get Started</Link>
-            </Button>
+          </Button>
           </div>
         </nav>
       </header>
@@ -52,13 +52,13 @@ export default function LandingPage() {
                     <div className="flex flex-col sm:flex-row gap-4 min-w-[300px] justify-center pt-4">
                         <Button asChild size="lg" className="bg-emerald-600 hover:bg-emerald-700 h-12 px-8 text-base">
                             <Link href="/dashboard">Request Demo</Link>
-                        </Button>
+                </Button>
                         <Button asChild variant="outline" size="lg" className="h-12 px-8 text-base border-slate-700 hover:bg-slate-800 hover:text-white text-slate-300">
                             <Link href="#how-it-works">How It Works</Link>
-                        </Button>
-                    </div>
+                </Button>
                 </div>
             </div>
+          </div>
         </section>
 
         {/* 3. The Problem */}
@@ -82,18 +82,18 @@ export default function LandingPage() {
                         <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
                             EXIF data (GPS, time) is easily spoofed. Anyone can edit a file's location to be anywhere on earth.
                         </p>
-                    </div>
+              </div>
                     <div className="flex flex-col items-start space-y-4">
                         <div className="p-3 bg-slate-200 dark:bg-slate-800 rounded-xl">
                             <FileCheck className="h-8 w-8 text-slate-700 dark:text-slate-300" />
-                        </div>
+              </div>
                         <h3 className="text-xl font-bold">Trust is Broken</h3>
                         <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
                             Courts, insurers, and media platforms have no reliable way to verify digital evidence. PoPC restores that trust.
                         </p>
-                    </div>
-                </div>
+              </div>
             </div>
+          </div>
         </section>
 
         {/* 4. How It Works */}
@@ -113,36 +113,36 @@ export default function LandingPage() {
                     <div className="flex flex-col items-center text-center space-y-4 bg-card p-6 rounded-xl border shadow-sm">
                         <div className="h-24 w-24 rounded-full bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center border-4 border-white dark:border-slate-950">
                             <Camera className="h-10 w-10 text-emerald-600 dark:text-emerald-400" />
-                        </div>
+                </div>
                         <h3 className="text-xl font-bold">1. Capture</h3>
                         <p className="text-sm text-slate-500">Secure camera app captures photo/video directly from hardware.</p>
-                    </div>
-
+              </div>
+              
                     <div className="flex flex-col items-center text-center space-y-4 bg-card p-6 rounded-xl border shadow-sm">
                         <div className="h-24 w-24 rounded-full bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center border-4 border-white dark:border-slate-950">
                             <Lock className="h-10 w-10 text-emerald-600 dark:text-emerald-400" />
                         </div>
                         <h3 className="text-xl font-bold">2. Sign</h3>
                         <p className="text-sm text-slate-500">Hardware-backed key (StrongBox) signs media immediately.</p>
-                    </div>
+                </div>
 
                     <div className="flex flex-col items-center text-center space-y-4 bg-card p-6 rounded-xl border shadow-sm">
                         <div className="h-24 w-24 rounded-full bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center border-4 border-white dark:border-slate-950">
                             <ShieldCheck className="h-10 w-10 text-emerald-600 dark:text-emerald-400" />
-                        </div>
+                </div>
                         <h3 className="text-xl font-bold">3. Verify</h3>
                         <p className="text-sm text-slate-500">Backend validates integrity, origin, and checks for edits.</p>
-                    </div>
-
+              </div>
+              
                     <div className="flex flex-col items-center text-center space-y-4 bg-card p-6 rounded-xl border shadow-sm">
                         <div className="h-24 w-24 rounded-full bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center border-4 border-white dark:border-slate-950">
                             <FileCheck className="h-10 w-10 text-emerald-600 dark:text-emerald-400" />
-                        </div>
+                </div>
                         <h3 className="text-xl font-bold">4. Prove</h3>
                         <p className="text-sm text-slate-500">Immutable evidence package is created for court or audit.</p>
-                    </div>
-                </div>
+              </div>
             </div>
+          </div>
         </section>
 
         {/* 5. Trust Moat Comparison */}
@@ -190,8 +190,8 @@ export default function LandingPage() {
                             </tr>
                         </tbody>
                     </table>
-                </div>
-             </div>
+            </div>
+          </div>
         </section>
 
         {/* 6. Use Cases */}
@@ -208,19 +208,19 @@ export default function LandingPage() {
                         <Briefcase className="h-10 w-10 text-emerald-600 mb-4" />
                         <h3 className="text-lg font-bold mb-2">Insurance</h3>
                         <p className="text-slate-500 text-sm">Eliminate AI-generated claims. Reduce fraud by verifying accident scene photos instantly.</p>
-                    </div>
+            </div>
                     <div className="flex flex-col p-6 border rounded-xl hover:shadow-lg transition-shadow bg-card">
                         <Scale className="h-10 w-10 text-emerald-600 mb-4" />
                         <h3 className="text-lg font-bold mb-2">Legal</h3>
                         <p className="text-slate-500 text-sm">Authenticate digital evidence for court. Establish a cryptographic chain of custody.</p>
-                    </div>
+              </div>
                     <div className="flex flex-col p-6 border rounded-xl hover:shadow-lg transition-shadow bg-card">
                         <Globe className="h-10 w-10 text-emerald-600 mb-4" />
                         <h3 className="text-lg font-bold mb-2">Platforms</h3>
                         <p className="text-slate-500 text-sm">Flag fake content at upload. Restore user trust in marketplace listings and news feeds.</p>
-                    </div>
-                </div>
+              </div>
             </div>
+          </div>
         </section>
 
         {/* 7. Final CTA */}
@@ -231,16 +231,16 @@ export default function LandingPage() {
                 </h2>
                 <p className="mx-auto max-w-[600px] text-slate-400 mb-10 text-lg">
                     If evidence matters, PoPC is the standard.
-                </p>
+            </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                     <Button asChild size="lg" className="bg-emerald-600 hover:bg-emerald-700 h-12 px-8">
                         <Link href="/dashboard">Request Demo</Link>
-                    </Button>
+              </Button>
                     <Button asChild variant="outline" size="lg" className="h-12 px-8 border-slate-700 hover:bg-slate-800 text-slate-300">
                          <Link href="mailto:contact@popc.dev">Talk to Us</Link>
-                    </Button>
-                </div>
+              </Button>
             </div>
+          </div>
         </section>
 
         {/* Footer */}

@@ -66,12 +66,12 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-8">
-      <div>
+              <div>
         <h1 className="text-3xl font-bold tracking-tight">Overview</h1>
         <p className="text-slate-500 dark:text-slate-400 mt-2">
           System health and verification integrity summary.
-        </p>
-      </div>
+              </p>
+            </div>
 
       {/* KPI Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -121,12 +121,12 @@ export default async function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.trustScore}%</div>
-            <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
               System-wide integrity rate
-            </p>
+              </p>
           </CardContent>
         </Card>
-      </div>
+            </div>
 
       {/* Recent Activity */}
       <div className="space-y-4">
@@ -153,13 +153,13 @@ export default async function DashboardPage() {
                 </tr>
               </thead>
               <tbody className="[&_tr:last-child]:border-0">
-                {recentVerifications.length === 0 ? (
-                  <tr>
+                 {recentVerifications.length === 0 ? (
+                   <tr>
                     <td colSpan={5} className="p-4 text-center text-muted-foreground">
                       No verifications yet.
-                    </td>
-                  </tr>
-                ) : (
+                     </td>
+                   </tr>
+                 ) : (
                   recentVerifications.map((item) => (
                     <tr key={item.id} className="border-b transition-colors hover:bg-muted/50">
                       <td className="p-4 align-middle">
@@ -192,8 +192,8 @@ export default async function DashboardPage() {
                         </Link>
                       </td>
                     </tr>
-                  ))
-                )}
+                   ))
+                 )}
               </tbody>
             </table>
           </div>

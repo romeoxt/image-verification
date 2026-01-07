@@ -29,7 +29,7 @@ export default async function DevicesPage() {
           </p>
         </div>
       </div>
-
+      
       <div className="rounded-xl border bg-card text-card-foreground shadow">
         <table className="w-full caption-bottom text-sm text-left">
           <thead className="[&_tr]:border-b">
@@ -68,10 +68,10 @@ export default async function DevicesPage() {
                       <span className="capitalize">{device.security_level || 'Software'}</span>
                     </div>
                   </td>
-                  <td className="p-4 align-middle">
+                <td className="p-4 align-middle">
                     {new Date(device.enrolled_at).toLocaleDateString()}
-                  </td>
-                  <td className="p-4 align-middle">
+                </td>
+                <td className="p-4 align-middle">
                     <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
                       !device.revoked_at
                         ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400' 
@@ -79,13 +79,13 @@ export default async function DevicesPage() {
                     }`}>
                       {!device.revoked_at ? 'Active' : 'Revoked'}
                     </span>
-                  </td>
-                  <td className="p-4 align-middle text-right">
+                </td>
+                <td className="p-4 align-middle text-right">
                     <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20">
                       <Trash2 className="h-4 w-4" />
                     </Button>
-                  </td>
-                </tr>
+                </td>
+              </tr>
               ))
             )}
           </tbody>
