@@ -1,6 +1,8 @@
 package com.popc.android.ui
 
 import android.Manifest
+import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -43,6 +45,16 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Check for onboarding
+        val sharedPref = getSharedPreferences("popc_prefs", Context.MODE_PRIVATE)
+        if (!sharedPref.getBoolean("COMPLETED_ONBOARDING", false)) {
+            val intent = Intent(this, OnboardingActivity::class.java)
+            startActivity(intent)
+            finish()
+            return
+        }
+
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 

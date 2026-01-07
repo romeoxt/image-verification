@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:gravity="center"
+    android:background="?attr/colorSurface">
+
+    <ImageView
+        android:id="@+id/iv_onboarding_image"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:src="@drawable/ic_launcher_foreground"
+        android:layout_marginBottom="32dp"
+        app:tint="?attr/colorPrimary"
+        android:contentDescription="PoPC Logo" />
+
+    <TextView
+        android:id="@+id/tv_onboarding_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Welcome to PoPC"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        android:textColor="?attr/colorOnSurface"
+        android:gravity="center"
+        android:layout_marginBottom="16dp" />
+
+    <TextView
+        android:id="@+id/tv_onboarding_description"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Proof of Physical Capture (PoPC) helps you capture verified photos and videos that courts, insurers, and news agencies can trust."
+        android:textSize="16sp"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        android:gravity="center"
+        android:layout_marginBottom="48dp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_onboarding_action"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Get Started"
+        android:padding="12dp"
+        app:cornerRadius="8dp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_onboarding_secondary"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Skip"
+        style="@style/Widget.Material3.Button.TextButton"
+        android:visibility="gone"
+        android:layout_marginTop="8dp" />
+
+</LinearLayout>
+
