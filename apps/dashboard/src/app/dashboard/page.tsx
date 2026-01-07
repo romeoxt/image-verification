@@ -1,204 +1,204 @@
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import { ShieldCheck, Users, Activity } from "lucide-react";
+import { 
+  ShieldCheck, 
+  AlertTriangle, 
+  Smartphone, 
+  Activity,
+  ArrowUpRight,
+  Clock,
+  MapPin
+} from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { queryOne, queryMany, type Verification } from "@/lib/db";
+import Link from 'next/link';
 
-// Force dynamic rendering so we get fresh data on every load
+// Force dynamic rendering
 export const dynamic = 'force-dynamic';
 
-function VerdictBadge({ verdict }: { verdict: string }) {
-  const styles = {
-    verified: "bg-green-100 text-green-800 border-green-200",
-    tampered: "bg-red-100 text-red-800 border-red-200",
-    unsigned: "bg-yellow-100 text-yellow-800 border-yellow-200",
-    invalid: "bg-orange-100 text-orange-800 border-orange-200",
-    revoked: "bg-gray-100 text-gray-800 border-gray-200",
-  };
-  
-  // @ts-ignore
-  const className = styles[verdict] || "bg-gray-100 text-gray-800 border-gray-200";
-  
-  return (
-    <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors ${className}`}>
-      {verdict.charAt(0).toUpperCase() + verdict.slice(1)}
-    </span>
-  );
-}
-
-export default async function DashboardHome() {
-  // Fetch real stats
-  let deviceCount = 0;
-  let revokedCount = 0;
-  let verificationCount = 0;
-  let recentVerifications: Verification[] = [];
-  let dbError = false;
-
+async function getStats() {
   try {
-    // Parallel queries for speed
-    const [devicesRes, verificationsRes, recentRes] = await Promise.all([
-      queryOne<{ total: string, revoked: string }>(`
-        SELECT 
-          count(*)::text as total,
-          count(revoked_at)::text as revoked
-        FROM devices
-      `),
+    const [devicesRes, verificationsRes, tamperedRes] = await Promise.all([
+      queryOne<{ total: string }>(`SELECT count(*)::text as total FROM devices WHERE revoked_at IS NULL`),
       queryOne<{ total: string }>(`SELECT count(*)::text as total FROM verifications`),
-      queryMany<Verification>(`SELECT * FROM verifications ORDER BY created_at DESC LIMIT 5`)
+      queryOne<{ total: string }>(`SELECT count(*)::text as total FROM verifications WHERE verdict != 'verified'`)
     ]);
 
-    deviceCount = parseInt(devicesRes?.total || '0');
-    revokedCount = parseInt(devicesRes?.revoked || '0');
-    verificationCount = parseInt(verificationsRes?.total || '0');
-    recentVerifications = recentRes;
+    const totalVerifications = parseInt(verificationsRes?.total || '0');
+    const totalTampered = parseInt(tamperedRes?.total || '0');
+    const totalDevices = parseInt(devicesRes?.total || '0');
+    
+    // Calculate trust score (simple percentage of verified / total)
+    const trustScore = totalVerifications > 0 
+      ? ((totalVerifications - totalTampered) / totalVerifications * 100).toFixed(1)
+      : '100';
+
+    return {
+      totalVerifications,
+      totalTampered,
+      totalDevices,
+      trustScore
+    };
   } catch (e) {
     console.error("DB Fetch Error", e);
-    dbError = true;
+    return {
+      totalVerifications: 0,
+      totalTampered: 0,
+      totalDevices: 0,
+      trustScore: '0.0'
+    };
   }
+}
+
+async function getRecentVerifications() {
+  try {
+    return await queryMany<Verification>(`
+      SELECT * FROM verifications 
+      ORDER BY created_at DESC 
+      LIMIT 5
+    `);
+  } catch (e) {
+    return [];
+  }
+}
+
+export default async function DashboardPage() {
+  const stats = await getStats();
+  const recentVerifications = await getRecentVerifications();
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="border-b">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2 font-bold text-xl">
-            <ShieldCheck className="h-6 w-6" />
-            <span>PoPC Admin</span>
-          </div>
-          <nav className="flex items-center gap-4">
-            <Button variant="ghost" asChild>
-              <Link href="/dashboard">Dashboard</Link>
-            </Button>
-            <Button variant="ghost" asChild>
-              <Link href="/dashboard/devices">Devices</Link>
-            </Button>
-            <Button variant="ghost" asChild>
-              <Link href="/dashboard/verifications">Logs</Link>
-            </Button>
-            <Button variant="outline">Sign Out</Button>
-          </nav>
-        </div>
-      </header>
-      
-      <main className="flex-1 container mx-auto px-4 py-8">
-        <div className="grid gap-8 md:grid-cols-3">
-          {/* Devices Card */}
-          <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
-            <div className="flex items-center gap-4">
-              <div className="p-2 bg-primary/10 rounded-full">
-                <Users className="h-6 w-6 text-primary" />
-              </div>
-              <div>
-                <h3 className="font-semibold">Devices</h3>
-                <p className="text-sm text-muted-foreground">Manage enrolled devices</p>
-              </div>
-            </div>
-            <div className="mt-4">
-              <div className="text-2xl font-bold">{dbError ? '-' : deviceCount}</div>
-              <p className="text-xs text-muted-foreground">
-                {revokedCount > 0 ? `${revokedCount} revoked` : 'All active'}
-              </p>
-            </div>
-            <div className="mt-4">
-              <Button variant="outline" className="w-full" asChild>
-                 <Link href="/dashboard/devices">View Devices</Link>
-              </Button>
-            </div>
-          </div>
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Overview</h1>
+        <p className="text-slate-500 dark:text-slate-400 mt-2">
+          System health and verification integrity summary.
+        </p>
+      </div>
 
-          {/* Verifications Card */}
-          <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
-             <div className="flex items-center gap-4">
-              <div className="p-2 bg-primary/10 rounded-full">
-                <ShieldCheck className="h-6 w-6 text-primary" />
-              </div>
-              <div>
-                <h3 className="font-semibold">Verifications</h3>
-                <p className="text-sm text-muted-foreground">Total volume</p>
-              </div>
-            </div>
-            <div className="mt-4">
-              <div className="text-2xl font-bold">{dbError ? '-' : verificationCount.toLocaleString()}</div>
-              <p className="text-xs text-muted-foreground">All time</p>
-            </div>
-             <div className="mt-4">
-              <Button variant="outline" className="w-full" asChild>
-                 <Link href="/dashboard/verifications">View Logs</Link>
-              </Button>
-            </div>
-          </div>
+      {/* KPI Cards */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Verified Media</CardTitle>
+            <ShieldCheck className="h-4 w-4 text-emerald-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.totalVerifications}</div>
+            <p className="text-xs text-muted-foreground">
+              Total items processed
+            </p>
+          </CardContent>
+        </Card>
 
-          {/* System Health Card */}
-           <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
-             <div className="flex items-center gap-4">
-              <div className="p-2 bg-primary/10 rounded-full">
-                <Activity className="h-6 w-6 text-primary" />
-              </div>
-              <div>
-                <h3 className="font-semibold">System Health</h3>
-                <p className="text-sm text-muted-foreground">Service status</p>
-              </div>
-            </div>
-            <div className="mt-4">
-              {dbError ? (
-                <div className="text-2xl font-bold text-destructive">Error</div>
-              ) : (
-                <div className="text-2xl font-bold text-green-600">Healthy</div>
-              )}
-              <p className="text-xs text-muted-foreground">
-                {dbError ? 'Database connection failed' : 'All systems operational'}
-              </p>
-            </div>
-             <div className="mt-4">
-              <Button variant="outline" className="w-full">System Status</Button>
-            </div>
-          </div>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Tampered Attempts</CardTitle>
+            <AlertTriangle className="h-4 w-4 text-red-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.totalTampered}</div>
+            <p className="text-xs text-muted-foreground">
+              Failed verification checks
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Active Devices</CardTitle>
+            <Smartphone className="h-4 w-4 text-blue-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.totalDevices}</div>
+            <p className="text-xs text-muted-foreground">
+              Enrolled & trusted sources
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Trust Score</CardTitle>
+            <Activity className="h-4 w-4 text-emerald-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.trustScore}%</div>
+            <p className="text-xs text-muted-foreground">
+              System-wide integrity rate
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Recent Activity */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-semibold tracking-tight">Recent Verifications</h2>
+          <Link 
+            href="/dashboard/gallery" 
+            className="text-sm font-medium text-emerald-600 hover:text-emerald-500 flex items-center gap-1"
+          >
+            View Gallery <ArrowUpRight className="h-4 w-4" />
+          </Link>
         </div>
 
-        <div className="mt-8">
-          <h2 className="text-xl font-bold mb-4">Recent Activity</h2>
-          <div className="rounded-md border">
-            <table className="w-full caption-bottom text-sm">
+        <div className="rounded-xl border bg-card text-card-foreground shadow">
+          <div className="relative w-full overflow-auto">
+            <table className="w-full caption-bottom text-sm text-left">
               <thead className="[&_tr]:border-b">
                 <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
-                  <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Asset</th>
-                  <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Verdict</th>
-                  <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Time</th>
-                  <th className="h-12 px-4 text-right align-middle font-medium text-muted-foreground"></th>
+                  <th className="h-12 px-4 align-middle font-medium text-muted-foreground">Status</th>
+                  <th className="h-12 px-4 align-middle font-medium text-muted-foreground">ID</th>
+                  <th className="h-12 px-4 align-middle font-medium text-muted-foreground">Timestamp</th>
+                  <th className="h-12 px-4 align-middle font-medium text-muted-foreground">Mode</th>
+                  <th className="h-12 px-4 align-middle font-medium text-muted-foreground text-right">Action</th>
                 </tr>
               </thead>
               <tbody className="[&_tr:last-child]:border-0">
-                 {recentVerifications.length === 0 ? (
-                   <tr>
-                     <td colSpan={4} className="p-4 text-center text-muted-foreground">
-                       {dbError ? 'Cannot load activity.' : 'No recent activity.'}
-                     </td>
-                   </tr>
-                 ) : (
-                   recentVerifications.map((v) => (
-                    <tr key={v.id} className="border-b transition-colors hover:bg-muted/50">
-                      <td className="p-4 align-middle font-mono text-xs">
-                        {v.asset_sha256.substring(0, 8)}...
+                {recentVerifications.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="p-4 text-center text-muted-foreground">
+                      No verifications yet.
+                    </td>
+                  </tr>
+                ) : (
+                  recentVerifications.map((item) => (
+                    <tr key={item.id} className="border-b transition-colors hover:bg-muted/50">
+                      <td className="p-4 align-middle">
+                        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ${
+                          item.verdict === 'verified' 
+                            ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400' 
+                            : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+                        }`}>
+                          {item.verdict === 'verified' ? 'Verified' : 'Tampered'}
+                        </span>
+                      </td>
+                      <td className="p-4 align-middle font-mono text-xs text-muted-foreground">
+                        {item.id.substring(0, 8)}...
                       </td>
                       <td className="p-4 align-middle">
-                        <VerdictBadge verdict={v.verdict} />
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <Clock className="h-3 w-3" />
+                          {new Date(item.created_at).toLocaleString()}
+                        </div>
                       </td>
-                      <td className="p-4 align-middle text-muted-foreground">
-                        {new Date(v.created_at).toLocaleTimeString()}
+                       <td className="p-4 align-middle">
+                        <span className="capitalize text-muted-foreground">{item.mode || 'N/A'}</span>
                       </td>
                       <td className="p-4 align-middle text-right">
-                        <Button variant="ghost" size="sm" asChild>
-                          <Link href="/dashboard/verifications">View</Link>
-                        </Button>
+                        <Link 
+                          href={`/verify/${item.id}`}
+                          className="text-emerald-600 hover:underline font-medium"
+                        >
+                          View Details
+                        </Link>
                       </td>
                     </tr>
-                   ))
-                 )}
+                  ))
+                )}
               </tbody>
             </table>
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }
-
-
