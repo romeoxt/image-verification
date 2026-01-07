@@ -17,7 +17,7 @@ export default function ApiKeysPage({ initialKeys }: { initialKeys: any[] }) {
     try {
       const result = await createApiKey("New Key"); // In a real app, prompt for name
       if (result.success && result.key) {
-        setNewKey(result.rawKey);
+        setNewKey(result.rawKey || null);
         setKeys([result.key, ...keys]);
       }
     } finally {
