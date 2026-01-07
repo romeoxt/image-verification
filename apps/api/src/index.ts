@@ -14,6 +14,7 @@ import { verifyRoutes } from './routes/verify.js';
 import { evidenceRoutes } from './routes/evidence.js';
 import { enrollRoutes } from './routes/enroll.js';
 import { assetRoutes } from './routes/assets.js'; // Added asset routes
+import { timestampRoutes } from './routes/timestamp.js';
 import { authenticateApiKey, type AuthenticatedRequest } from './lib/auth.js';
 import { securityHeaders } from './lib/security.js';
 import type { Config } from './types/index.js';
@@ -163,14 +164,10 @@ async function registerRoutes() {
   // Asset routes
   await fastify.register(assetRoutes);
 
-  // Stub routes
+  // Timestamp routes
+  await fastify.register(timestampRoutes);
 
-  fastify.post('/v1/timestamp', async (_request, reply) => {
-    return reply.code(501).send({
-      error: 'not_implemented',
-      message: 'Timestamp endpoint not yet implemented',
-    });
-  });
+  // Stub routes
 
   fastify.get('/v1/verify/ui', async (_request, reply) => {
     return reply.code(501).send({
