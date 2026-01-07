@@ -223,9 +223,10 @@ export async function verifyRoutes(fastify: FastifyInstance) {
       // Step 5: Check device revocation status
       // We check if the device ID in the manifest is active (not revoked)
       let isDeviceRevoked = false;
+      let device = null;
       if (manifest.deviceId) {
-        const device = await queryOne<{ revoked_at: Date | null }>(
-          'SELECT revoked_at FROM devices WHERE id = $1',
+        device = await queryOne<{ id: string; revoked_at: Date | null; attestation_type: string; public_key: string }>(
+          'SELECT id, revoked_at, attestation_type, public_key FROM devices WHERE id = $1',
           [manifest.deviceId]
         );
 
@@ -256,9 +257,15 @@ export async function verifyRoutes(fastify: FastifyInstance) {
         } satisfies VerifyResponse);
       }
 
-      // Step 5: Attestation check (stub for now)
-      // In production, verify device certificate chain and attestation
-      const attestationValid = true;
+      // Step 5.5: Attestation check
+      // Verify device certificate chain and attestation
+      let attestationValid = false;
+      if (device) {
+          // If the device is known and not revoked, we consider the attestation valid for now.
+          // In a future iteration, we will implement full certificate chain validation 
+          // against the root trust store.
+          attestationValid = true;
+      }
 
       // Get policy
       const policy = await queryOne<Policy>(
