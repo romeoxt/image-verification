@@ -1,9 +1,9 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, type Variants } from 'framer-motion';
 
 export function TracksSection() {
-  const pathVariants = {
+  const pathVariants: Variants = {
     hidden: { pathLength: 0, opacity: 0 },
     visible: {
       pathLength: 1,
@@ -18,7 +18,7 @@ export function TracksSection() {
     },
   };
 
-  const barVariants = {
+  const barVariants: Variants = {
     hidden: { scaleY: 0, opacity: 0 },
     visible: {
       scaleY: 1,
