@@ -9,25 +9,25 @@ const tabs = [
     id: 0,
     title: "1. Capture",
     description: "Secure camera app captures media directly from hardware sensors.",
-    lottieUrl: "https://cdn.prod.website-files.com/68ed090d0998c3c224a59e7c/691ce4f0e3b9190e110e359c_8f6b8d382f17fb6b82c9fee0aa08fa77_Vooma%20-%20Animation%201.json"
+    lottieUrl: "/animations/capture.json"
   },
   {
     id: 1,
     title: "2. Sign",
     description: "Hardware-backed key signs the data immediately on-device.",
-    lottieUrl: "https://cdn.prod.website-files.com/68ed090d0998c3c224a59e7c/691ce4f061dda993dae89a30_4060ea6f4b7bdbe2fd55ce23788fe8d5_Vooma%20-%20Animation%202.json"
+    lottieUrl: "/animations/sign.json"
   },
   {
     id: 2,
     title: "3. Verify",
     description: "Backend validates the cryptographic signature and origin.",
-    lottieUrl: "https://cdn.prod.website-files.com/68ed090d0998c3c224a59e7c/691ce4f0b3211c8ab2551da1_9b0afe685e71fd03191ac31251fbeff4_Vooma%20-%20Animation%203.json"
+    lottieUrl: "/animations/verify.json"
   },
   {
     id: 3,
     title: "4. Prove",
     description: "Generate an immutable evidence package for audit.",
-    lottieUrl: "https://cdn.prod.website-files.com/68ed090d0998c3c224a59e7c/691ce4f068737019d7816909_adcef3f8b5e2b5dced6381416bf6e76f_Vooma%20-%20Animation%204.json"
+    lottieUrl: "/animations/prove.json"
   }
 ];
 
