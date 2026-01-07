@@ -54,10 +54,18 @@ export default async function GalleryPage() {
             <Card key={item.id} className="overflow-hidden hover:shadow-md transition-shadow group">
               <div className="aspect-video bg-slate-100 dark:bg-slate-800 relative">
                 {/* Visual Placeholder or Real Image */}
-                <div className="absolute inset-0 flex items-center justify-center text-slate-400">
-                   {/* In a real app, use <Image src={item.storageUrl} ... /> */}
-                   <span className="text-xs font-mono">Asset Preview</span>
-                </div>
+                {item.metadata?.storageUrl ? (
+                  <img 
+                    src={item.metadata.storageUrl} 
+                    alt={`Verification ${item.id}`}
+                    className="absolute inset-0 w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center text-slate-400">
+                     <span className="text-xs font-mono">Asset Preview</span>
+                  </div>
+                )}
                 
                 {/* Status Badge */}
                 <div className="absolute top-2 right-2">

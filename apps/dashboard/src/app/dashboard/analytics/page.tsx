@@ -1,13 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { queryOne } from "@/lib/db";
-import { BarChart3 } from 'lucide-react';
+import { OutcomesChart } from "./charts";
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
 
 async function getAnalytics() {
   try {
-    // Simple mock data or real counts
     const [verdictStats] = await Promise.all([
       queryOne<{ verified: string, tampered: string }>(`
         SELECT 
@@ -44,15 +43,8 @@ export default async function AnalyticsPage() {
             <CardTitle>Verification Outcomes</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-center h-64 bg-slate-50 dark:bg-slate-900 rounded-lg border border-dashed">
-              <div className="text-center space-y-2">
-                <BarChart3 className="h-10 w-10 text-slate-300 mx-auto" />
-                <p className="text-sm text-slate-500">Charts require client-side rendering (Recharts).</p>
-                <div className="flex gap-4 text-sm font-medium mt-4">
-                  <span className="text-emerald-600">Verified: {data.verified}</span>
-                  <span className="text-red-600">Tampered: {data.tampered}</span>
-                </div>
-              </div>
+            <div className="h-64">
+              <OutcomesChart verified={data.verified} tampered={data.tampered} />
             </div>
           </CardContent>
         </Card>
@@ -63,7 +55,7 @@ export default async function AnalyticsPage() {
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-center h-64 bg-slate-50 dark:bg-slate-900 rounded-lg border border-dashed">
-              <p className="text-sm text-slate-500">Timeline visualization placeholder</p>
+              <p className="text-sm text-slate-500">Not enough data for timeline</p>
             </div>
           </CardContent>
         </Card>
