@@ -39,17 +39,17 @@ export default function UseCasesPage() {
                 </div>
                 <div className="grid md:grid-cols-2 gap-12">
                   <div>
-                    <p className="text-lg text-slate-600 mb-4">
+                    <p className="text-lg text-slate-600 mb-8">
                       In an era of deepfakes, proving that a photo from a conflict zone is authentic is critical for maintaining public trust.
                     </p>
-                    <ul className="space-y-4">
-                      <li className="bg-white p-4 rounded-lg shadow-sm border border-slate-100">
-                        <strong className="block mb-1">Conflict Reporting</strong>
-                        <span className="text-slate-500">Verify imagery from stringers and freelancers before publishing.</span>
+                    <ul className="space-y-6">
+                      <li className="bg-white p-6 rounded-lg shadow-sm border border-slate-100">
+                        <strong className="block mb-2 text-lg">Conflict Reporting</strong>
+                        <span className="text-slate-500 leading-relaxed">Verify imagery from stringers and freelancers before publishing.</span>
                       </li>
-                      <li className="bg-white p-4 rounded-lg shadow-sm border border-slate-100">
-                        <strong className="block mb-1">Archive Integrity</strong>
-                        <span className="text-slate-500">Ensure historical records remain unaltered over decades.</span>
+                      <li className="bg-white p-6 rounded-lg shadow-sm border border-slate-100">
+                        <strong className="block mb-2 text-lg">Archive Integrity</strong>
+                        <span className="text-slate-500 leading-relaxed">Ensure historical records remain unaltered over decades.</span>
                       </li>
                     </ul>
                   </div>
@@ -67,17 +67,17 @@ export default function UseCasesPage() {
                 </div>
                 <div className="grid md:grid-cols-2 gap-12">
                   <div>
-                    <p className="text-lg text-slate-600 mb-4">
+                    <p className="text-lg text-slate-600 mb-8">
                       Fraudulent claims using AI-generated or manipulated photos cost insurers billions. PoPC eliminates this vector entirely.
                     </p>
-                    <ul className="space-y-4">
-                      <li className="bg-white p-4 rounded-lg shadow-sm border border-slate-100">
-                        <strong className="block mb-1">Accident Documentation</strong>
-                        <span className="text-slate-500">Drivers capture verified photos of damage at the scene.</span>
+                    <ul className="space-y-6">
+                      <li className="bg-white p-6 rounded-lg shadow-sm border border-slate-100">
+                        <strong className="block mb-2 text-lg">Accident Documentation</strong>
+                        <span className="text-slate-500 leading-relaxed">Drivers capture verified photos of damage at the scene.</span>
                       </li>
-                      <li className="bg-white p-4 rounded-lg shadow-sm border border-slate-100">
-                        <strong className="block mb-1">Asset Verification</strong>
-                        <span className="text-slate-500">Prove high-value items exist and are in claimed condition.</span>
+                      <li className="bg-white p-6 rounded-lg shadow-sm border border-slate-100">
+                        <strong className="block mb-2 text-lg">Asset Verification</strong>
+                        <span className="text-slate-500 leading-relaxed">Prove high-value items exist and are in claimed condition.</span>
                       </li>
                     </ul>
                   </div>
@@ -95,17 +95,17 @@ export default function UseCasesPage() {
                 </div>
                 <div className="grid md:grid-cols-2 gap-12">
                   <div>
-                    <p className="text-lg text-slate-600 mb-4">
+                    <p className="text-lg text-slate-600 mb-8">
                       Digital evidence is increasingly challenged in court. PoPC provides a cryptographic chain of custody that stands up to scrutiny.
                     </p>
-                    <ul className="space-y-4">
-                      <li className="bg-white p-4 rounded-lg shadow-sm border border-slate-100">
-                        <strong className="block mb-1">Chain of Custody</strong>
-                        <span className="text-slate-500">Mathematical proof that evidence hasn't changed since capture.</span>
+                    <ul className="space-y-6">
+                      <li className="bg-white p-6 rounded-lg shadow-sm border border-slate-100">
+                        <strong className="block mb-2 text-lg">Chain of Custody</strong>
+                        <span className="text-slate-500 leading-relaxed">Mathematical proof that evidence hasn't changed since capture.</span>
                       </li>
-                      <li className="bg-white p-4 rounded-lg shadow-sm border border-slate-100">
-                        <strong className="block mb-1">Location Assurance</strong>
-                        <span className="text-slate-500">Verified GPS coordinates embedded in the signature.</span>
+                      <li className="bg-white p-6 rounded-lg shadow-sm border border-slate-100">
+                        <strong className="block mb-2 text-lg">Location Assurance</strong>
+                        <span className="text-slate-500 leading-relaxed">Verified GPS coordinates embedded in the signature.</span>
                       </li>
                     </ul>
                   </div>
