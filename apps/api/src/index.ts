@@ -108,6 +108,11 @@ async function registerMiddleware() {
       return;
     }
 
+    // Allow public access to evidence and assets
+    if (request.url.startsWith('/v1/evidence/') || request.url.startsWith('/v1/assets/')) {
+      return;
+    }
+
     // Check if auth is disabled (development only)
     if (process.env.DISABLE_API_AUTH === 'true') {
       fastify.log.warn('API authentication is DISABLED - development only');
