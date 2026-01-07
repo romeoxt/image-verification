@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { updateSession } from './lib/auth';
+import { updateSession } from '@/lib/auth';
 
 export async function middleware(request: NextRequest) {
   // Check auth for dashboard routes
