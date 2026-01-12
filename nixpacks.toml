@@ -1,2 +1,30 @@
 [phases.setup]
 nixPkgs = ["nodejs_20"]
+
+[phases.install]
+cmds = ["npm install --include=optional"]
+
+[build]
+builder = "NIXPACKS"
+
+[deploy]
+restartPolicyType = "ON_FAILURE"
+
+# Service 1: API (Backend)
+[[services]]
+name = "api"
+root = "."
+# Build c2pa package first, then API. 
+# We remove node_modules first to ensure a clean slate and force native module recompilation.
+buildCommand = "rm -rf node_modules && npm install --include=optional && npm run build --workspace=@popc/c2pa && npm run build --workspace=@popc/api"
+startCommand = "npm run start --workspace=@popc/api"
+healthcheckPath = "/health"
+
+# Service 2: Dashboard (Frontend)
+[[services]]
+name = "dashboard"
+root = "apps/dashboard"
+# We remove node_modules first to ensure a clean slate and force native module recompilation.
+buildCommand = "rm -rf node_modules && npm install --include=optional && npm run build"
+startCommand = "npm start"
+healthcheckPath = "/"
