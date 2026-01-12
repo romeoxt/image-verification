@@ -389,6 +389,40 @@
             }
           }
         },
+        "screen": {
+          "type": "object",
+          "description": "Screen artifact detection signals",
+          "properties": {
+            "moire": {
+              "type": "object",
+              "properties": {
+                "detected": { "type": "boolean" },
+                "score": { "type": "number" }
+              }
+            },
+            "pixel_grid": {
+              "type": "object",
+              "properties": {
+                "detected": { "type": "boolean" },
+                "score": { "type": "number" }
+              }
+            },
+            "depth_anomaly": {
+              "type": "object",
+              "properties": {
+                "detected": { "type": "boolean" },
+                "score": { "type": "number" }
+              }
+            },
+            "glare": {
+              "type": "object",
+              "properties": {
+                "detected": { "type": "boolean" },
+                "score": { "type": "number" }
+              }
+            }
+          }
+        },
         "upload_channel": {
           "type": "object",
           "description": "Upload channel security signals",

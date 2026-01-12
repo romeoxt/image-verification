@@ -6,6 +6,7 @@
  */
 
 import exifr from 'exifr';
+import { analyzeScreenArtifacts } from './cv.js';
 
 // Type definitions matching OpenAPI HeuristicSignals schema
 export interface ExifSignals {
@@ -46,6 +47,13 @@ export interface UploadChannelSignals {
   signedForm?: boolean;
 }
 
+export interface ScreenSignals {
+  moire?: { detected: boolean; score: number };
+  pixel_grid?: { detected: boolean; score: number };
+  depth_anomaly?: { detected: boolean; score: number };
+  glare?: { detected: boolean; score: number };
+}
+
 export interface HeuristicSignals {
   exif?: ExifSignals;
   jpeg?: JpegSignals;
@@ -53,6 +61,7 @@ export interface HeuristicSignals {
   ml?: MlSignals;
   reverse_image?: ReverseImageSignals;
   upload_channel?: UploadChannelSignals;
+  screen?: ScreenSignals;
 }
 
 /**
@@ -258,6 +267,14 @@ export function computeHeuristicScore(signals: HeuristicSignals): number {
     score += (signals.ml.score - 50) * 0.2; // Adjust by ML score
   }
 
+  // Screen/Recapture signals
+  if (signals.screen) {
+    if (signals.screen.moire?.detected) score -= 20;
+    if (signals.screen.pixel_grid?.detected) score -= 30; // Strong indicator of screen
+    if (signals.screen.depth_anomaly?.detected) score -= 10;
+    if (signals.screen.glare?.detected) score -= 10;
+  }
+
   // Clamp to [0, 100]
   return Math.max(0, Math.min(100, Math.round(score)));
 }
@@ -278,6 +295,9 @@ export async function analyzeAsset(buffer: Buffer): Promise<{
 
   // JPEG analysis (if applicable)
   signals.jpeg = await analyzeJpeg(buffer);
+
+  // Screen artifact analysis
+  signals.screen = await analyzeScreenArtifacts(buffer);
 
   // Noise analysis (placeholder)
   signals.noise = {
