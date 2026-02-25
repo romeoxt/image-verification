@@ -252,6 +252,12 @@ npm start
 # Run all tests
 npm test
 
+# Run integration tests only
+npm run test:integration
+
+# Run integration tests with ephemeral Docker Postgres
+npm run test:integration:db
+
 # Test enrollment
 curl -X POST http://localhost:3000/v1/enroll \
   -H "Content-Type: application/json" \

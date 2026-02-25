@@ -178,15 +178,13 @@ export async function verifyAndroidKeyAttestation(
       const dataStr = extensionData.toString();
 
       // Determine security level (simplified heuristic)
-      // Note: This is a workaround until proper ASN.1 parsing is implemented
       if (dataStr.toLowerCase().includes('strongbox')) {
         securityLevel = 'strongbox';
       } else if (dataStr.toLowerCase().includes('tee') || certificates.length >= 2) {
         securityLevel = 'tee';
       } else {
-        // If we have a valid attestation extension but can't determine the level,
-        // assume TEE since Android Key Attestation requires hardware backing
-        securityLevel = 'tee';
+        securityLevel = 'unknown';
+        errors.push('attestation_security_level_unknown: Unable to determine hardware security level');
       }
 
       // Extract verified boot state (simplified)
@@ -218,10 +216,9 @@ export async function verifyAndroidKeyAttestation(
         }
       }
 
-      // Extract OS version and patch level (simplified)
-      // In production, parse from teeEnforced or softwareEnforced auth lists
-      osVersion = '14'; // Placeholder
-      patchLevel = '2024-01'; // Placeholder
+      // TODO: Parse full ASN.1 attestation records for OS version and patch level.
+      osVersion = undefined;
+      patchLevel = undefined;
     } catch (err) {
       errors.push(`attestation_invalid_extension: Failed to parse attestation extension: ${(err as Error).message}`);
     }

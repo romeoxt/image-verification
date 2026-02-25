@@ -96,6 +96,7 @@ export const enrollRoutes: FastifyPluginAsync = async (fastify) => {
     Reply: EnrollmentResponse | ErrorResponse;
   }>('/v1/enroll', async (request, reply) => {
     const body = request.body;
+    const isProduction = process.env.NODE_ENV === 'production';
 
     if (!body.platform || !['android', 'ios', 'web'].includes(body.platform)) {
       return reply.code(400).send({
@@ -119,6 +120,14 @@ export const enrollRoutes: FastifyPluginAsync = async (fastify) => {
             error: 'invalid_request',
             errors: ['missing_cert_chain'],
             message: 'Android enrollment requires certChainPem array',
+          });
+        }
+
+        if (isProduction && !challenge) {
+          return reply.code(400).send({
+            error: 'invalid_request',
+            errors: ['missing_challenge'],
+            message: 'Android enrollment requires server challenge in production',
           });
         }
 
@@ -147,7 +156,6 @@ export const enrollRoutes: FastifyPluginAsync = async (fastify) => {
 
         // Production Security: REJECT software-backed keys
         // Only allow hardware-backed keys (StrongBox/TEE) for cryptographic integrity
-        const isProduction = process.env.NODE_ENV === 'production';
         const allowSoftwareKeysForTesting = process.env.ALLOW_SOFTWARE_KEYS === 'true';
         
         if (actualSecurityLevel === 'software') {
@@ -302,6 +310,14 @@ export const enrollRoutes: FastifyPluginAsync = async (fastify) => {
           });
         }
 
+        if (isProduction && (!clientDataJSON || !bundleId)) {
+          return reply.code(400).send({
+            error: 'invalid_request',
+            errors: ['missing_client_data_or_bundle_id'],
+            message: 'iOS enrollment requires clientDataJSON and bundleId in production',
+          });
+        }
+
         const attestationBuffer = Buffer.from(attestationObj, 'base64');
         const clientDataBuffer = clientDataJSON ? Buffer.from(clientDataJSON, 'base64') : undefined;
         const db = getDb();
@@ -423,6 +439,14 @@ export const enrollRoutes: FastifyPluginAsync = async (fastify) => {
       } else {
         // Web platform (software keys allowed for desktop signer)
         const { csrPem, publicKeyFingerprint, allowSoftware, algorithm, curve, deviceMetadata } = body;
+
+        if (isProduction && process.env.ALLOW_WEB_SOFTWARE_ENROLLMENT !== 'true') {
+          return reply.code(400).send({
+            error: 'insecure_device',
+            errors: ['web_enrollment_disabled_in_production'],
+            message: 'Web software-key enrollment is disabled in production',
+          });
+        }
 
         if (!csrPem || !publicKeyFingerprint) {
           return reply.code(400).send({

@@ -1,0 +1,106 @@
+name: quality-gates
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  c2pa-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm install
+      - name: Run c2pa tests
+        run: npm test --workspace=@popc/c2pa
+
+  api-quality:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:14-alpine
+        env:
+          POSTGRES_DB: popc_test
+          POSTGRES_USER: popc
+          POSTGRES_PASSWORD: popc_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U popc -d popc_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://popc:popc_password@localhost:5432/popc_test
+      TEST_DATABASE_URL: postgresql://popc:popc_password@localhost:5432/popc_test
+      NODE_ENV: test
+      DISABLE_API_AUTH: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm install
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      - name: Build c2pa package
+        run: npm run build --workspace=@popc/c2pa
+      - name: Run database schema and migrations
+        run: |
+          npm run db:migrate --workspace=@popc/api
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f apps/api/db/migrations/001_add_api_keys.sql
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f apps/api/db/migrations/002_add_replay_protection.sql
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f apps/api/db/migrations/003_add_verification_metadata.sql
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f apps/api/db/migrations/004_add_users.sql
+          npm run db:seed --workspace=@popc/api
+      - name: Run API typecheck
+        run: npm run typecheck --workspace=@popc/api
+      - name: Run API integration tests
+        run: npm run test:integration --workspace=@popc/api
+
+  migration-smoke:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:14-alpine
+        env:
+          POSTGRES_DB: popc_smoke
+          POSTGRES_USER: popc
+          POSTGRES_PASSWORD: popc_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U popc -d popc_smoke"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://popc:popc_password@localhost:5432/popc_smoke
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm install
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      - name: Run schema and migrations twice (idempotency smoke check)
+        run: |
+          npm run db:migrate --workspace=@popc/api
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f apps/api/db/migrations/001_add_api_keys.sql
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f apps/api/db/migrations/002_add_replay_protection.sql
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f apps/api/db/migrations/003_add_verification_metadata.sql
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f apps/api/db/migrations/004_add_users.sql
+          npm run db:seed --workspace=@popc/api
+          npm run db:migrate --workspace=@popc/api
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f apps/api/db/migrations/001_add_api_keys.sql
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f apps/api/db/migrations/002_add_replay_protection.sql
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f apps/api/db/migrations/003_add_verification_metadata.sql
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f apps/api/db/migrations/004_add_users.sql

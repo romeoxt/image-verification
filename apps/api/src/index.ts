@@ -6,6 +6,7 @@ import Fastify from 'fastify';
 import fastifyMultipart from '@fastify/multipart';
 import fastifyCors from '@fastify/cors';
 import fastifyStatic from '@fastify/static';
+import fastifyRateLimit from '@fastify/rate-limit';
 import { config as loadEnv } from 'dotenv';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -38,6 +39,8 @@ const config: Config = {
   corsOrigin: process.env.CORS_ORIGIN || '*',
 };
 
+const isProduction = process.env.NODE_ENV === 'production';
+
 // Create Fastify instance
 const fastify = Fastify({
   logger: config.logPretty
@@ -65,6 +68,15 @@ const fastify = Fastify({
  * Register plugins
  */
 async function registerPlugins() {
+  await fastify.register(fastifyRateLimit, {
+    max: Number(process.env.IP_RATE_LIMIT_PER_MINUTE) || 240,
+    timeWindow: '1 minute',
+    errorResponseBuilder: (_request, context) => ({
+      error: 'rate_limited',
+      message: `Rate limit exceeded. Retry in ${Math.ceil(context.ttl / 1000)}s`,
+    }),
+  });
+
   // CORS
   await fastify.register(fastifyCors, {
     origin: config.corsOrigin,
@@ -130,6 +142,25 @@ async function registerMiddleware() {
  * Register routes
  */
 async function registerRoutes() {
+  // Liveness check
+  fastify.get('/health/live', async () => {
+    return { status: 'live', timestamp: new Date().toISOString() };
+  });
+
+  // Readiness check
+  fastify.get('/health/ready', async (_request, reply) => {
+    try {
+      const db = getDb();
+      await db.query('SELECT 1');
+      return { status: 'ready', timestamp: new Date().toISOString() };
+    } catch {
+      return reply.code(503).send({
+        status: 'not_ready',
+        timestamp: new Date().toISOString(),
+      });
+    }
+  });
+
   // Health check
   fastify.get('/health', async () => {
     return { status: 'ok', timestamp: new Date().toISOString() };
@@ -184,6 +215,8 @@ async function initializeApp() {
   if (appInitialized) {
     return;
   }
+
+  assertProductionSafetyConfig();
 
   // Initialize database
   fastify.log.info('Connecting to database...');
@@ -276,5 +309,45 @@ function enforceScopeForRoute(request: AuthenticatedRequest, reply: import('fast
   if (request.url.startsWith('/v1/assets/') && !(hasScope('asset:read') || hasScope('evidence:read') || hasScope('verify:read'))) {
     reply.code(403).send({ error: 'forbidden', message: 'Missing required scope: asset:read' });
     return;
+  }
+}
+
+function assertProductionSafetyConfig(): void {
+  if (!isProduction) {
+    return;
+  }
+
+  const errors: string[] = [];
+  const requireVar = (name: string) => {
+    if (!process.env[name] || process.env[name]?.trim() === '') {
+      errors.push(`${name} must be set in production`);
+    }
+  };
+
+  requireVar('DATABASE_URL');
+  requireVar('PUBLIC_URL');
+  requireVar('CORS_ORIGIN');
+
+  if (process.env.CORS_ORIGIN === '*') {
+    errors.push('CORS_ORIGIN cannot be "*" in production');
+  }
+  if (process.env.DISABLE_API_AUTH === 'true') {
+    errors.push('DISABLE_API_AUTH must never be true in production');
+  }
+  if (process.env.ALLOW_INSECURE_ATTESTATION_DEV === 'true') {
+    errors.push('ALLOW_INSECURE_ATTESTATION_DEV must never be true in production');
+  }
+  if (process.env.ALLOW_CLIENT_SECURITY_OVERRIDE === 'true') {
+    errors.push('ALLOW_CLIENT_SECURITY_OVERRIDE must never be true in production');
+  }
+  if (process.env.ALLOW_SOFTWARE_KEYS === 'true') {
+    errors.push('ALLOW_SOFTWARE_KEYS must never be true in production');
+  }
+  if (process.env.ALLOW_VERIFY_URL_FETCH === 'true') {
+    errors.push('ALLOW_VERIFY_URL_FETCH must never be true in production (SSRF risk)');
+  }
+
+  if (errors.length > 0) {
+    throw new Error(`Production safety checks failed: ${errors.join('; ')}`);
   }
 }
