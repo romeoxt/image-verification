@@ -115,14 +115,13 @@ export async function verifyAndroidKeyAttestation(
       errors.push('attestation_expired: Leaf certificate is not valid at current time');
     }
 
-    // Step 3: Verify chain to Google root (simplified validation)
-    // In production, implement full chain validation with signature checks
-    // ALLOW ALL ROOTS FOR TESTING - bypassing root certificate validation
-    const isTrustedRoot = true;
+    // Step 3: Verify chain to expected root (simplified validation)
+    // Note: Full PKI path/signature validation should still be implemented.
+    const rootCert = certificates[certificates.length - 1];
+    const rootDescriptor = `${rootCert.subject} ${rootCert.issuer}`.toLowerCase();
+    const isTrustedRoot = rootDescriptor.includes('google') || rootDescriptor.includes('android');
 
-    if (!isTrustedRoot && certificates.length > 1) {
-      // If not a known root, this might be a test/development certificate
-      // For production, this should be an error
+    if (!isTrustedRoot && !isDevAttestationBypassEnabled()) {
       errors.push('attestation_untrusted_root: Certificate chain does not terminate at a known Google root');
     }
 
@@ -139,14 +138,24 @@ export async function verifyAndroidKeyAttestation(
     }
 
     if (!attestationExtension) {
-      // BYPASS FOR TESTING: Allow enrollment even without attestation extension
-      // errors.push('attestation_invalid_extension: Android Key Attestation extension not found');
+      if (isDevAttestationBypassEnabled()) {
+        return {
+          ok: true,
+          errors: [],
+          securityLevel: 'software',
+          verifiedBoot: null,
+          verifiedBootState: 'UNKNOWN',
+          certificateChainInfo,
+        };
+      }
+
+      errors.push('attestation_invalid_extension: Android Key Attestation extension not found');
       return {
-        ok: true, // Allow it!
-        errors: [],
-        securityLevel: 'software', // Fallback to software
-        verifiedBoot: null,
-        verifiedBootState: 'UNKNOWN',
+        ok: false,
+        errors,
+        securityLevel,
+        verifiedBoot,
+        verifiedBootState,
         certificateChainInfo,
       };
     }
@@ -439,4 +448,8 @@ export function securityLevelToString(level: SecurityLevel): string {
     default:
       return 'Unknown';
   }
+}
+
+function isDevAttestationBypassEnabled(): boolean {
+  return process.env.NODE_ENV !== 'production' && process.env.ALLOW_INSECURE_ATTESTATION_DEV === 'true';
 }

@@ -82,7 +82,6 @@ export async function analyzeScreenArtifacts(buffer: Buffer): Promise<CVAnalysis
   let width: number;
   let height: number;
   let data: Buffer;
-  let channels: number;
 
   try {
     const { data: rawData, info } = await sharp(buffer)
@@ -92,7 +91,6 @@ export async function analyzeScreenArtifacts(buffer: Buffer): Promise<CVAnalysis
     
     width = info.width;
     height = info.height;
-    channels = info.channels; // Should be 4 due to ensureAlpha()
     data = rawData;
   } catch (e) {
     // Return safe defaults if not a valid image

@@ -3,10 +3,14 @@
  */
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import * as c2pa from '@popc/c2pa';
+import crypto from 'crypto';
+import dns from 'dns/promises';
+import net from 'net';
 import { query, queryOne, type Policy } from '../lib/db.js';
 import { sha256, generateVerificationId } from '../lib/crypto.js';
 import { analyzeAsset } from '../lib/heuristics.js';
-import { saveFile } from '../lib/storage.js'; // Added storage import
+import { saveFile } from '../lib/storage.js';
+import type { AuthenticatedRequest } from '../lib/auth.js';
 import type { VerifyRequestJson, VerifyResponse } from '../types/index.js';
 
 export async function verifyRoutes(fastify: FastifyInstance) {
@@ -17,6 +21,7 @@ export async function verifyRoutes(fastify: FastifyInstance) {
     Body: VerifyRequestJson;
   }>('/v1/verify', async (request: FastifyRequest, reply: FastifyReply) => {
     try {
+      const authRequest = request as AuthenticatedRequest;
       const contentType = request.headers['content-type'] || '';
 
       let assetBytes: Buffer;
@@ -55,6 +60,7 @@ export async function verifyRoutes(fastify: FastifyInstance) {
 
       // Step 1: Compute SHA-256 hash of asset
       const assetSha256 = sha256(assetBytes);
+      const manifestSha256 = manifestBytes ? sha256(manifestBytes) : null;
 
       // Step 2: Check if manifest is present - if not, run heuristic mode
       if (!manifestBytes || manifestBytes.length === 0) {
@@ -72,10 +78,12 @@ export async function verifyRoutes(fastify: FastifyInstance) {
 
         const verificationId = await recordVerification({
           assetSha256,
+          manifestSha256,
           verdict: 'unsigned',
           reasons: ['No C2PA manifest found', isVideo ? 'Video file (heuristic skipped)' : 'Running heuristic analysis'],
           deviceId: null,
           policyId: null,
+          apiKeyId: authRequest.apiKeyId || null,
           assetSizeBytes: assetBytes.length,
           assetMimeType: isVideo ? 'video/mp4' : 'image/jpeg',
         });
@@ -106,10 +114,12 @@ export async function verifyRoutes(fastify: FastifyInstance) {
 
         const verificationId = await recordVerification({
           assetSha256,
+          manifestSha256,
           verdict,
           reasons: errorReasons,
           deviceId: null,
           policyId: null,
+          apiKeyId: authRequest.apiKeyId || null,
           assetSizeBytes: assetBytes.length,
         });
 
@@ -132,10 +142,12 @@ export async function verifyRoutes(fastify: FastifyInstance) {
       if (!verifyResult.contentBindingMatch) {
         const verificationId = await recordVerification({
           assetSha256,
+          manifestSha256,
           verdict: 'tampered',
           reasons: verifyResult.errors,
           deviceId: null,
           policyId: null,
+          apiKeyId: authRequest.apiKeyId || null,
           assetSizeBytes: assetBytes.length,
         });
 
@@ -155,10 +167,12 @@ export async function verifyRoutes(fastify: FastifyInstance) {
       if (!verifyResult.signatureValid) {
         const verificationId = await recordVerification({
           assetSha256,
+          manifestSha256,
           verdict: 'invalid',
           reasons: verifyResult.errors,
           deviceId: null,
           policyId: null,
+          apiKeyId: authRequest.apiKeyId || null,
           assetSizeBytes: assetBytes.length,
         });
 
@@ -196,10 +210,12 @@ export async function verifyRoutes(fastify: FastifyInstance) {
 
             const verificationId = await recordVerification({
               assetSha256,
+              manifestSha256,
               verdict: 'invalid',
               reasons: ['Replay attack detected', `Sequence number ${sequenceNumber} is not greater than device sequence ${device.photo_sequence}`],
               deviceId: manifest.deviceId,
               policyId: null,
+              apiKeyId: authRequest.apiKeyId || null,
               assetSizeBytes: assetBytes.length,
               sequenceNumber,
             });
@@ -225,8 +241,8 @@ export async function verifyRoutes(fastify: FastifyInstance) {
       let isDeviceRevoked = false;
       let device = null;
       if (manifest.deviceId) {
-        device = await queryOne<{ id: string; revoked_at: Date | null; attestation_type: string; public_key: string }>(
-          'SELECT id, revoked_at, attestation_type, public_key FROM devices WHERE id = $1',
+        device = await queryOne<{ id: string; revoked_at: Date | null; attestation_type: string; public_key: string; public_key_fingerprint: string }>(
+          'SELECT id, revoked_at, attestation_type, public_key, public_key_fingerprint FROM devices WHERE id = $1',
           [manifest.deviceId]
         );
 
@@ -235,13 +251,39 @@ export async function verifyRoutes(fastify: FastifyInstance) {
         }
       }
 
+      if (manifest.deviceId && !device) {
+        const verificationId = await recordVerification({
+          assetSha256,
+          manifestSha256,
+          verdict: 'invalid',
+          reasons: ['device_not_enrolled'],
+          deviceId: manifest.deviceId,
+          policyId: null,
+          apiKeyId: authRequest.apiKeyId || null,
+          assetSizeBytes: assetBytes.length,
+        });
+
+        return reply.code(200).send({
+          verificationId,
+          mode: 'certified',
+          verdict: 'invalid',
+          assetSha256,
+          reasons: ['Device not enrolled'],
+          metadata: null,
+          evidencePackageUrl: null,
+          verifiedAt: new Date().toISOString(),
+        } satisfies VerifyResponse);
+      }
+
       if (isDeviceRevoked) {
         const verificationId = await recordVerification({
           assetSha256,
+          manifestSha256,
           verdict: 'revoked',
           reasons: ['Device certificate revoked'],
           deviceId: manifest.deviceId || null,
           policyId: null,
+          apiKeyId: authRequest.apiKeyId || null,
           assetSizeBytes: assetBytes.length,
         });
 
@@ -261,10 +303,33 @@ export async function verifyRoutes(fastify: FastifyInstance) {
       // Verify device certificate chain and attestation
       let attestationValid = false;
       if (device) {
-          // If the device is known and not revoked, we consider the attestation valid for now.
-          // In a future iteration, we will implement full certificate chain validation 
-          // against the root trust store.
           attestationValid = true;
+      }
+
+      // Step 5.6: Device key binding check
+      if (device && !isManifestKeyBoundToDevice(manifest.signature.publicKey, device.public_key, device.public_key_fingerprint)) {
+        const verificationId = await recordVerification({
+          assetSha256,
+          manifestSha256,
+          verdict: 'invalid',
+          reasons: ['manifest_key_device_mismatch'],
+          deviceId: manifest.deviceId || null,
+          policyId: null,
+          apiKeyId: authRequest.apiKeyId || null,
+          assetSizeBytes: assetBytes.length,
+          sequenceNumber,
+        });
+
+        return reply.code(200).send({
+          verificationId,
+          mode: 'certified',
+          verdict: 'invalid',
+          assetSha256,
+          reasons: ['Manifest signing key does not match enrolled device key'],
+          metadata: null,
+          evidencePackageUrl: null,
+          verifiedAt: new Date().toISOString(),
+        } satisfies VerifyResponse);
       }
 
       // Get policy
@@ -308,10 +373,12 @@ export async function verifyRoutes(fastify: FastifyInstance) {
       
       const verificationId = await recordVerification({
         assetSha256,
+        manifestSha256,
         verdict: 'verified',
         reasons,
         deviceId: manifest.deviceId || null,
         policyId: policy?.id || null,
+        apiKeyId: authRequest.apiKeyId || null,
         assetSizeBytes: assetBytes.length,
         capturedAt: capturedAtDate,
         signatureAlgorithm: manifest.signature.algorithm,
@@ -349,7 +416,12 @@ export async function verifyRoutes(fastify: FastifyInstance) {
       
       // Provide more specific error messages for common issues
       const errorMessage = (error as Error).message;
-      if (errorMessage.includes('fetch') || errorMessage.includes('network')) {
+      if (
+        errorMessage.includes('fetch') ||
+        errorMessage.includes('network') ||
+        errorMessage.includes('URL') ||
+        errorMessage.includes('disabled by policy')
+      ) {
         return reply.code(400).send({
           error: 'fetch_error',
           message: 'Unable to fetch image from URL. Please try uploading the image directly using base64 encoding.',
@@ -441,13 +513,33 @@ async function handleJsonRequest(body: VerifyRequestJson): Promise<{
  * Fetch URL and return bytes
  */
 async function fetchUrl(url: string): Promise<Buffer> {
+  if (process.env.ALLOW_VERIFY_URL_FETCH !== 'true') {
+    throw new Error('Remote URL fetching is disabled by policy');
+  }
+
+  const parsed = new URL(url);
+  if (!['http:', 'https:'].includes(parsed.protocol)) {
+    throw new Error('Only HTTP(S) URLs are allowed');
+  }
+
+  if (isBlockedHostname(parsed.hostname)) {
+    throw new Error('URL host is not allowed');
+  }
+
+  const addresses = await dns.lookup(parsed.hostname, { all: true });
+  for (const address of addresses) {
+    if (isPrivateIp(address.address)) {
+      throw new Error('URL resolves to a private or loopback address');
+    }
+  }
+
   try {
     const response = await fetch(url, {
       headers: {
         'User-Agent': process.env.USER_AGENT || 'PoPC-Verification-API/1.0',
         'Accept': 'image/*,*/*',
       },
-      // Railway may have network restrictions, so we'll handle errors gracefully
+      signal: AbortSignal.timeout(10000),
     });
 
     if (!response.ok) {
@@ -467,10 +559,12 @@ async function fetchUrl(url: string): Promise<Buffer> {
  */
 async function recordVerification(data: {
   assetSha256: string;
+  manifestSha256: string | null;
   verdict: 'verified' | 'tampered' | 'unsigned' | 'invalid' | 'revoked';
   reasons: string[];
   deviceId: string | null;
   policyId: string | null;
+  apiKeyId: string | null;
   assetSizeBytes: number;
   assetMimeType?: string;
   capturedAt?: Date | null;
@@ -488,13 +582,15 @@ async function recordVerification(data: {
       reasons_json,
       device_id,
       policy_id,
+      api_key_id,
       asset_size_bytes,
       asset_mime_type,
+      manifest_sha256,
       captured_at,
       signature_algorithm,
       sequence_number,
-      metadata -- Added metadata column
-    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+      metadata
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)`,
     [
       verificationId,
       data.assetSha256,
@@ -502,8 +598,10 @@ async function recordVerification(data: {
       JSON.stringify(data.reasons),
       data.deviceId,
       data.policyId,
+      data.apiKeyId,
       data.assetSizeBytes,
       data.assetMimeType || 'image/jpeg',
+      data.manifestSha256,
       data.capturedAt || null,
       data.signatureAlgorithm || null,
       data.sequenceNumber || null,
@@ -526,7 +624,68 @@ async function recordVerification(data: {
  * Get base URL from request
  */
 function getBaseUrl(request: FastifyRequest): string {
+  if (process.env.PUBLIC_URL) {
+    return process.env.PUBLIC_URL;
+  }
   const protocol = request.headers['x-forwarded-proto'] || 'http';
   const host = request.headers['x-forwarded-host'] || request.headers.host;
   return `${protocol}://${host}`;
+}
+
+function isBlockedHostname(hostname: string): boolean {
+  const lower = hostname.toLowerCase();
+  return lower === 'localhost' || lower.endsWith('.localhost');
+}
+
+function isPrivateIp(ip: string): boolean {
+  if (net.isIP(ip) === 4) {
+    if (ip.startsWith('10.')) return true;
+    if (ip.startsWith('127.')) return true;
+    if (ip.startsWith('192.168.')) return true;
+    const secondOctet = Number(ip.split('.')[1] ?? '0');
+    if (ip.startsWith('172.') && secondOctet >= 16 && secondOctet <= 31) return true;
+    if (ip === '0.0.0.0') return true;
+    return false;
+  }
+
+  if (net.isIP(ip) === 6) {
+    const normalized = ip.toLowerCase();
+    return normalized === '::1' || normalized.startsWith('fc') || normalized.startsWith('fd') || normalized.startsWith('fe80');
+  }
+
+  return true;
+}
+
+function isManifestKeyBoundToDevice(manifestPublicKey: string, deviceStoredKey: string, deviceFingerprint: string): boolean {
+  const manifestFingerprint = computePublicKeyFingerprint(manifestPublicKey);
+  if (!manifestFingerprint) return false;
+
+  // Preferred: compare fingerprint directly (works when DB stores SPKI fingerprint)
+  if (manifestFingerprint === deviceFingerprint) {
+    return true;
+  }
+
+  // Fallback: compare to fingerprint derived from stored key/certificate.
+  const storedFingerprint = computePublicKeyFingerprint(deviceStoredKey);
+  return storedFingerprint === manifestFingerprint;
+}
+
+function computePublicKeyFingerprint(keyOrCert: string): string | null {
+  try {
+    const keyObject = crypto.createPublicKey(keyOrCert);
+    const der = keyObject.export({ type: 'spki', format: 'der' }) as Buffer;
+    return crypto.createHash('sha256').update(der).digest('hex');
+  } catch {
+    try {
+      const keyObject = crypto.createPublicKey({
+        key: Buffer.from(keyOrCert, 'base64'),
+        format: 'der',
+        type: 'spki',
+      });
+      const der = keyObject.export({ type: 'spki', format: 'der' }) as Buffer;
+      return crypto.createHash('sha256').update(der).digest('hex');
+    } catch {
+      return null;
+    }
+  }
 }

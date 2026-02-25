@@ -4,7 +4,7 @@
  */
 
 import type { FastifyPluginAsync } from 'fastify';
-import { randomUUID } from 'crypto';
+import { randomUUID, createPublicKey, createHash } from 'crypto';
 import {
   verifyAndroidKeyAttestation,
   verifyAppleAppAttest,
@@ -132,21 +132,18 @@ export const enrollRoutes: FastifyPluginAsync = async (fastify) => {
           });
         }
 
-        // Use client-reported security level if backend parsing is ambiguous
-        // This is a workaround until proper ASN.1 parsing is implemented
-        fastify.log.info(`Attestation result securityLevel: ${attestationResult.securityLevel}`);
-        fastify.log.info(`Client reported securityLevel: ${deviceMetadata?.clientSecurityLevel}`);
-        
         let actualSecurityLevel = attestationResult.securityLevel;
-        if (attestationResult.securityLevel === 'tee' && deviceMetadata?.clientSecurityLevel === 'strongbox') {
+        const allowClientSecurityOverride =
+          process.env.NODE_ENV !== 'production' &&
+          process.env.ALLOW_CLIENT_SECURITY_OVERRIDE === 'true';
+
+        if (allowClientSecurityOverride && attestationResult.securityLevel === 'tee' && deviceMetadata?.clientSecurityLevel === 'strongbox') {
           actualSecurityLevel = 'strongbox';
-          fastify.log.info(`Client reports StrongBox, using that instead of backend TEE detection`);
-        } else if (deviceMetadata?.clientSecurityLevel === 'strongbox') {
+          fastify.log.warn(`Using client-reported StrongBox override in development`);
+        } else if (allowClientSecurityOverride && deviceMetadata?.clientSecurityLevel === 'strongbox') {
           actualSecurityLevel = 'strongbox';
-          fastify.log.info(`Client reports StrongBox, trusting client (backend detected: ${attestationResult.securityLevel})`);
+          fastify.log.warn(`Trusting client-reported StrongBox in development`);
         }
-        
-        fastify.log.info(`Final actualSecurityLevel: ${actualSecurityLevel}`);
 
         // Production Security: REJECT software-backed keys
         // Only allow hardware-backed keys (StrongBox/TEE) for cryptographic integrity
@@ -191,6 +188,7 @@ export const enrollRoutes: FastifyPluginAsync = async (fastify) => {
         // Extract cert fingerprint and expiry
         const leafCert = attestationResult.certificateChainInfo?.[0];
         const certFingerprint = leafCert?.fingerprintSha256 || null;
+        const signingKeyFingerprint = derivePublicKeyFingerprint(certChainPem[0]) || certFingerprint;
         const certExpiry = leafCert?.notAfter ? new Date(leafCert.notAfter) : null;
         const expiresAt = certExpiry ? certExpiry.toISOString() : null;
 
@@ -220,7 +218,7 @@ export const enrollRoutes: FastifyPluginAsync = async (fastify) => {
           [
             deviceId,
             'android',
-            certFingerprint,
+            signingKeyFingerprint,
             'android_key_attestation',
             actualSecurityLevel,
             enrolledAt,
@@ -280,7 +278,7 @@ export const enrollRoutes: FastifyPluginAsync = async (fastify) => {
             securityLevel: mapSecurityLevel(actualSecurityLevel),
             certFingerprint: certFingerprint || undefined,
           },
-          publicKeyFingerprint: certFingerprint || undefined,
+          publicKeyFingerprint: signingKeyFingerprint || undefined,
           deviceMetadata: {
             platform: 'android',
             manufacturer: deviceMetadata?.manufacturer,
@@ -337,10 +335,10 @@ export const enrollRoutes: FastifyPluginAsync = async (fastify) => {
 
         // Insert into database
         await db.query(
-          `INSERT INTO devices (device_id, platform, public_key_fingerprint, attestation_type,
+          `INSERT INTO devices (id, platform, public_key_fingerprint, attestation_type,
            security_level, enrolled_at, cert_expiry, device_metadata, status)
            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-           ON CONFLICT (device_id) DO UPDATE SET
+           ON CONFLICT (id) DO UPDATE SET
              public_key_fingerprint = EXCLUDED.public_key_fingerprint,
              attestation_type = EXCLUDED.attestation_type,
              security_level = EXCLUDED.security_level,
@@ -459,9 +457,9 @@ export const enrollRoutes: FastifyPluginAsync = async (fastify) => {
 
         // Insert into database
         const result = await db.query(
-          `INSERT INTO devices (public_key, attestation_type, platform, manufacturer, model,
+          `INSERT INTO devices (id, public_key, attestation_type, platform, manufacturer, model,
            os_version, public_key_fingerprint)
-           VALUES ($1, $2, $3, $4, $5, $6, $7)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
            ON CONFLICT (public_key_fingerprint) DO UPDATE SET
              public_key = EXCLUDED.public_key,
              attestation_type = EXCLUDED.attestation_type,
@@ -471,6 +469,7 @@ export const enrollRoutes: FastifyPluginAsync = async (fastify) => {
              os_version = EXCLUDED.os_version
            RETURNING id, enrolled_at`,
           [
+            deviceId,
             csrPem,
             'software_key',
             'web',
@@ -519,3 +518,13 @@ export const enrollRoutes: FastifyPluginAsync = async (fastify) => {
     }
   });
 };
+
+function derivePublicKeyFingerprint(keyPemOrCertPem: string): string | null {
+  try {
+    const keyObj = createPublicKey(keyPemOrCertPem);
+    const der = keyObj.export({ type: 'spki', format: 'der' }) as Buffer;
+    return createHash('sha256').update(der).digest('hex');
+  } catch {
+    return null;
+  }
+}

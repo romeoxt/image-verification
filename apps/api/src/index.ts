@@ -13,7 +13,7 @@ import { initDb, closeDb, getDb } from './lib/db.js';
 import { verifyRoutes } from './routes/verify.js';
 import { evidenceRoutes } from './routes/evidence.js';
 import { enrollRoutes } from './routes/enroll.js';
-import { assetRoutes } from './routes/assets.js'; // Added asset routes
+import { assetRoutes } from './routes/assets.js';
 import { timestampRoutes } from './routes/timestamp.js';
 import { authenticateApiKey, type AuthenticatedRequest } from './lib/auth.js';
 import { securityHeaders } from './lib/security.js';
@@ -109,11 +109,6 @@ async function registerMiddleware() {
       return;
     }
 
-    // Allow public access to evidence and assets
-    if (request.url.startsWith('/v1/evidence/') || request.url.startsWith('/v1/assets/')) {
-      return;
-    }
-
     // Check if auth is disabled (development only)
     if (process.env.DISABLE_API_AUTH === 'true') {
       fastify.log.warn('API authentication is DISABLED - development only');
@@ -124,6 +119,9 @@ async function registerMiddleware() {
     if (request.url.startsWith('/v1/')) {
       const db = getDb();
       await authenticateApiKey(request, reply, fastify, db);
+      if (reply.sent) return;
+      enforceScopeForRoute(request, reply);
+      if (reply.sent) return;
     }
   });
 }
@@ -180,19 +178,30 @@ async function registerRoutes() {
 /**
  * Start server
  */
+let appInitialized = false;
+
+async function initializeApp() {
+  if (appInitialized) {
+    return;
+  }
+
+  // Initialize database
+  fastify.log.info('Connecting to database...');
+  initDb({
+    connectionString: config.databaseUrl,
+  });
+  fastify.log.info('Database connected');
+
+  // Register plugins, middleware, and routes
+  await registerPlugins();
+  await registerMiddleware();
+  await registerRoutes();
+  appInitialized = true;
+}
+
 async function start() {
   try {
-    // Initialize database
-    fastify.log.info('Connecting to database...');
-    initDb({
-      connectionString: config.databaseUrl,
-    });
-    fastify.log.info('Database connected');
-
-    // Register plugins, middleware, and routes
-    await registerPlugins();
-    await registerMiddleware();
-    await registerRoutes();
+    await initializeApp();
 
     // Start listening
     await fastify.listen({
@@ -228,8 +237,44 @@ async function shutdown(signal: string) {
 process.on('SIGTERM', () => shutdown('SIGTERM'));
 process.on('SIGINT', () => shutdown('SIGINT'));
 
-// Start server
-start();
+// Start server unless in test mode
+if (process.env.NODE_ENV !== 'test') {
+  start();
+}
 
 // Export for testing
-export { fastify, config };
+export { fastify, config, initializeApp };
+
+function enforceScopeForRoute(request: AuthenticatedRequest, reply: import('fastify').FastifyReply): void {
+  if (!request.apiKey) {
+    return;
+  }
+
+  const scopes = request.apiKey.scopes || [];
+  const hasScope = (scope: string) => scopes.includes(scope) || scopes.includes('admin');
+
+  if (request.method === 'POST' && request.url.startsWith('/v1/verify') && !hasScope('verify:write')) {
+    reply.code(403).send({ error: 'forbidden', message: 'Missing required scope: verify:write' });
+    return;
+  }
+
+  if (request.method === 'POST' && request.url.startsWith('/v1/enroll') && !hasScope('device:write')) {
+    reply.code(403).send({ error: 'forbidden', message: 'Missing required scope: device:write' });
+    return;
+  }
+
+  if (request.method === 'POST' && request.url.startsWith('/v1/timestamp') && !hasScope('verify:read')) {
+    reply.code(403).send({ error: 'forbidden', message: 'Missing required scope: verify:read' });
+    return;
+  }
+
+  if (request.url.startsWith('/v1/evidence/') && !(hasScope('evidence:read') || hasScope('verify:read'))) {
+    reply.code(403).send({ error: 'forbidden', message: 'Missing required scope: evidence:read' });
+    return;
+  }
+
+  if (request.url.startsWith('/v1/assets/') && !(hasScope('asset:read') || hasScope('evidence:read') || hasScope('verify:read'))) {
+    reply.code(403).send({ error: 'forbidden', message: 'Missing required scope: asset:read' });
+    return;
+  }
+}

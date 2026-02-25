@@ -170,7 +170,11 @@ export async function logApiKeyUsage(
       [apiKeyId]
     );
   } catch (error) {
-    console.error('Failed to log API key usage:', error);
+    // Tests may delete API keys before async usage logging flushes.
+    // Ignore FK violations here to keep auth non-blocking.
+    if ((error as { code?: string })?.code !== '23503') {
+      console.error('Failed to log API key usage:', error);
+    }
     // Don't fail the request if usage logging fails
   }
 }

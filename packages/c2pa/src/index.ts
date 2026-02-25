@@ -248,9 +248,19 @@ async function verifyJWTSignature(
       algorithms: [signature.algorithm],
     });
 
-    // Optionally verify payload matches assertions
-    // (In real C2PA, the JWT payload should contain the assertion hash)
-    return payload !== null;
+    // Security-critical: bind signed payload to manifest assertions.
+    // At minimum, the signed c2pa.hash.data must exactly match the manifest assertion.
+    const signedBinding = payload['c2pa.hash.data'];
+    const manifestBinding = assertions['c2pa.hash.data'];
+
+    if (!isHashBinding(signedBinding) || !isHashBinding(manifestBinding)) {
+      return false;
+    }
+
+    return (
+      normalizeHashAlgorithm(signedBinding.algorithm) === normalizeHashAlgorithm(manifestBinding.algorithm) &&
+      signedBinding.hash === manifestBinding.hash
+    );
   } catch (error) {
     return false;
   }
@@ -474,4 +484,14 @@ function extractMetadata(manifest: C2PAManifest): {
   }
 
   return { deviceId, capturedAt, other: metadata };
+}
+
+function isHashBinding(value: unknown): value is { algorithm: string; hash: string } {
+  if (!value || typeof value !== 'object') return false;
+  const v = value as Record<string, unknown>;
+  return typeof v.algorithm === 'string' && typeof v.hash === 'string' && v.hash.length > 0;
+}
+
+function normalizeHashAlgorithm(algorithm: string): string {
+  return algorithm.trim().toLowerCase();
 }

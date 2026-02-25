@@ -124,11 +124,11 @@ INSERT INTO api_keys (
     metadata
 )
 SELECT
-    'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855', -- Hash of empty string (dev key)
-    'pk_dev_t',
+    '10b4a5e337c09fda1717b6967ccab45b9bb7a7890cc2e23d29d5bafcfcf43e71',
+    'pk_devtest1',
     'Development Test Key',
     'Default API key for local development and testing',
-    ARRAY['verify:read', 'verify:write', 'device:read', 'device:write'],
+    ARRAY['verify:read', 'verify:write', 'device:read', 'device:write', 'evidence:read', 'asset:read'],
     true,
     1000,
     100000,

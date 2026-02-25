@@ -32,13 +32,6 @@ CREATE TRIGGER users_updated_at_trigger
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
 
--- Seed initial admin user if not exists (password: admin123)
--- Hash is bcrypt for 'admin123'
-INSERT INTO users (email, password_hash, full_name, role)
-VALUES (
-    'admin@popc.dev',
-    '$2a$10$X7X.7.X7X.7.X7X.7.X7X.7.X7X.7.X7X.7.X7X.7.X7X.7.X7X', -- Placeholder, need real hash
-    'Admin User',
-    'admin'
-) ON CONFLICT (email) DO NOTHING;
+-- Intentionally do not seed a default admin user with a static password.
+-- Create initial dashboard users through secure bootstrap tooling.
 

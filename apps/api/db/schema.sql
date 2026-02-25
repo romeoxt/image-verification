@@ -453,7 +453,7 @@ $$ LANGUAGE plpgsql;
 COMMENT ON FUNCTION get_transparency_inclusion_proof IS 'Get transparency log inclusion proof for an asset';
 
 -- Function: Check if device is active (not revoked)
-CREATE OR REPLACE FUNCTION is_device_active(p_device_id UUID)
+CREATE OR REPLACE FUNCTION is_device_active(p_device_id TEXT)
 RETURNS BOOLEAN AS $$
 DECLARE
     v_revoked_at TIMESTAMPTZ;

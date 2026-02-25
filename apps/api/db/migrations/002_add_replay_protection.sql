@@ -25,6 +25,6 @@ BEGIN
     ADD CONSTRAINT verifications_device_sequence_unique 
     UNIQUE (device_id, sequence_number);
 EXCEPTION
-    WHEN duplicate_table THEN NULL;
+    WHEN duplicate_object THEN NULL;
 END $$;
 
